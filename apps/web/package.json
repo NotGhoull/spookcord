@@ -41,5 +41,6 @@
 		"mode-watcher": "^1.0.7",
 		"zod": "^3.24.4",
 		"@spookcord/db-schema": "workspace:*"
-	}
+	},
+	"packageManager": "bun@1.2.13"
 }

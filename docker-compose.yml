@@ -1,0 +1,15 @@
+services:
+  server:
+    container_name: "server"
+    build:
+      context: .
+      dockerfile: "./apps/server/Dockerfile"
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      - spookcord_network
+
+
+networks:
+  spookcord_network:

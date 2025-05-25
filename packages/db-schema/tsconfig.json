@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"composite": true, // Enables project references (good for monorepos)
+		"outDir": "./dist", // Output relative to the package root
+		"rootDir": "./src", // Source files are in the current directory (src)
+		"declaration": true, // THIS IS ESSENTIAL: Generates .d.ts files
+		"declarationMap": true, // Recommended for better debugging experience
+		"emitDeclarationOnly": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"moduleResolution": "bundler", // Or "node". "bundler" often works well with Bun.
+		"target": "es2020",
+		"module": "esnext",
+		"lib": ["esnext"] // Add necessary lib files if you use modern features
+	},
+	"include": ["./src/schema.ts"],
+	"exclude": ["./dist", "**/node_modules/*"] // Exclude node_modules and output
+}

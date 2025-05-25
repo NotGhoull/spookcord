@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+@config "../tailwind.config.ts";
+
+@layer base {
+	:root {
+		--background: 240 10% 3.9%;
+		--foreground: 0 0% 88%;
+
+		--card: 240 10% 5%;
+		--card-foreground: 0 0% 88%;
+
+		--sidebar: 240 10% 3.9%;
+		--channel-list: 240 7% 8%;
+		--chat-area: 240 5% 11%;
+		--members-list: 240 7% 8%;
+		--user-panel: 240 10% 5%;
+
+		--separator: 240 5% 15%;
+		--button: 240 5% 20%;
+		--button-hover: 240 5% 25%;
+		--message-hover: 240 5% 15%;
+		--input-bg: 240 5% 15%;
+		--tooltip: 0 0% 0%;
+
+		--muted: 240 5% 55%;
+		--accent: 24 100% 50%;
+		--secondary: 280 60% 55%;
+		--input: 240 3.7% 15.9%;
+
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
+
+		--radius: 0.5rem;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-separator;
+	}
+	body {
+		@apply bg-background text-foreground;
+		font-feature-settings:
+			'rlig' 1,
+			'calt' 1;
+	}
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: hsl(var(--button));
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: hsl(var(--button-hover));
+}
+
+/* Subtle animations */
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+}
+
+@keyframes pulse-glow {
+	0%,
+	100% {
+		opacity: 0.5;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.8;
+		transform: scale(1.05);
+	}
+}
+
+.animate-float {
+	animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+	animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Typography */
+body {
+	/* font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+  letter-spacing: -0.011em; */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	letter-spacing: -0.021em;
+}

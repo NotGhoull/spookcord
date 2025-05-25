@@ -1,0 +1,20 @@
+{
+	"name": "@spookcord/db-schema",
+	"version": "1.0.0",
+	"private": true,
+	"main": "./src/schema.ts",
+	"scripts": {
+		"build": "bun build ./src/schema.ts --outdir ./dist --external drizzle-orm --production && bun generate",
+		"generate": "tsc",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"typescript": "latest"
+	},
+	"peerDependencies": {
+		"drizzle-orm": "^latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

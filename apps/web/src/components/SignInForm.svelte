@@ -15,7 +15,7 @@
 
 	const { switchToSignUp } = $props<{ switchToSignUp: () => void }>();
 
-	let error = $state<undefined | ErrorContext>();
+	let error = $state<ErrorContext>();
 
 	const validationSchema = z.object({
 		email: z.string().email('Invalid email address'),
@@ -31,9 +31,14 @@
 				{
 					onSuccess: () => goto('/chat'),
 					onError: (_error) => {
-						// We do this to keep typescript happy
-						// (_error as ErrorContext | undefined) = error;
-						console.log('error!');
+						// Despite the type saying it'll always be error context, it won't always be defined
+
+						if (typeof _error == 'undefined') {
+							_error = error as ErrorContext;
+							console.log('error!', _error.error ?? 'Incorrect username or password, I guess');
+							return;
+						}
+						console.log('Incorrect username or password, probably');
 					}
 				}
 			);
@@ -113,7 +118,7 @@
 				<form.Subscribe>
 					{#snippet children(state)}
 						{#if state.isSubmitSuccessful}
-							{@render errorMessage('Incorrect username or password')}
+							{@render errorMessage(error?.response.statusText ?? 'Incorrect username or password')}
 						{/if}
 						<Button
 							type="submit"

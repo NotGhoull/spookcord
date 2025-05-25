@@ -7,7 +7,7 @@
 	],
 	"scripts": {
 		"prepare": "husky",
-		"check": "biome check --write .",
+		"check": "prettier --write .",
 		"dev": "turbo dev",
 		"build": "turbo build",
 		"check-types": "turbo check-types",

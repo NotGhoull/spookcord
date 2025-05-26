@@ -1,25 +1,6 @@
 <script lang="ts">
 	import { CurrentChannel, CurrentServer } from '$lib/localStates/chat';
 	import JoinServerPopup from './JoinServerPopup.svelte';
-	import {
-		Accessibility,
-		Bell,
-		ChevronLeftIcon,
-		ChevronUp,
-		Database,
-		Keyboard,
-		LockIcon,
-		LogOutIcon,
-		Palette,
-		Shield,
-		User,
-		XIcon
-	} from '@lucide/svelte';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { cn } from '$lib/utils';
-	import { Dialog, Label, Separator } from 'bits-ui';
-	import { Content } from '$lib/components/ui/dialog';
-	import UserProfileSettings from '../User-Settings/UserProfileSettings.svelte';
 	import SpookCordLogo from '../SpookCordLogo.svelte';
 
 	const { selfId, isAddButton = false }: { selfId: string; isAddButton?: boolean } = $props();

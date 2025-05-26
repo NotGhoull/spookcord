@@ -3,22 +3,32 @@
 	import { onMount } from 'svelte';
 	import ServerButton from './ServerButton.svelte';
 	import { orpc } from '$lib/orpc';
+	import { joinedServers } from '$lib/localStates/serverListState';
 
 	let servers = $state();
 
+	joinedServers.subscribe((data) => {
+		servers = data;
+		console.log('Servers were updated ', data);
+	});
+
 	onMount(async () => {
-		await orpc.getUserById.call({}).then((data) => {
-			if (!data) {
-				return;
-			}
+		if (!$joinedServers) {
+			console.log('Re-get servers');
 
-			servers = data?.serverMemberships.sort((a, b) => {
-				// Ensure correct sorting; `getTime()` should return a number
-				return a.joinedAt.getTime() - b.joinedAt.getTime();
+			await orpc.getUserById.call({}).then((data) => {
+				if (!data) {
+					return;
+				}
+				let temp;
+				temp = data?.serverMemberships.sort((a, b) => {
+					// Ensure correct sorting; `getTime()` should return a number
+					return a.joinedAt.getTime() - b.joinedAt.getTime();
+				});
+
+				$joinedServers = temp;
 			});
-
-			console.log('User belongs to ', servers);
-		});
+		}
 	});
 </script>
 

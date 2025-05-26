@@ -4,16 +4,14 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Component, EyeIcon, Icon, LockIcon, MailIcon, TriangleAlert } from '@lucide/svelte';
-	import { createForm, Field } from '@tanstack/svelte-form';
+	import { EyeIcon, Icon, LockIcon, MailIcon, TriangleAlert } from '@lucide/svelte';
+	import { createForm } from '@tanstack/svelte-form';
 	import type { AnyFieldApi } from '@tanstack/svelte-form';
 	import { z } from 'zod';
 	import SpookCordLogo from './SpookCordLogo.svelte';
-	import type { ErrorContext } from 'better-auth/svelte';
 	import type { FullAutoFill } from 'svelte/elements';
-	import { blur, slide } from 'svelte/transition';
-
-	const { switchToSignUp } = $props<{ switchToSignUp: () => void }>();
+	import { slide } from 'svelte/transition';
+	import type { ErrorContext } from 'better-auth/svelte';
 
 	let error = $state<ErrorContext>();
 
@@ -64,21 +62,6 @@
 						class="bg-accent relative flex h-full w-full items-center justify-center rounded-full"
 					>
 						<SpookCordLogo />
-						<!-- <svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="text-accent h-2/3 w-2/3"
-						>
-							<path
-								d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"
-								fill="currentColor"
-							/>
-						</svg> -->
 					</div>
 				</div>
 			</div>

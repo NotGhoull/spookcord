@@ -10,5 +10,18 @@ services:
     networks:
       - spookcord_network
 
+  web:
+    container_name: 'web'
+    build:
+      context: .
+      dockerfile: './apps/web/Dockerfile'
+    restart: unless-stopped
+    ports:
+      - 3001:3001
+    networks:
+      - spookcord_network
+    environment:
+      - PORT=3001
+
 networks:
   spookcord_network:

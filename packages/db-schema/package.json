@@ -4,12 +4,12 @@
 	"private": true,
 	"main": "./src/schema.ts",
 	"scripts": {
-		"build": "bun build ./src/schema.ts --outdir ./dist --external drizzle-orm --production && bun generate",
+		"build": "bunx tsc && bunx tsc-alias",
 		"generate": "tsc",
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
-		"typescript": "latest"
+		"typescript": "^5.8.3"
 	},
 	"peerDependencies": {
 		"drizzle-orm": "^latest"

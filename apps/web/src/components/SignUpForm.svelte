@@ -4,26 +4,13 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import {
-		Component,
-		EyeIcon,
-		Icon,
-		LockIcon,
-		MailIcon,
-		TriangleAlert,
-		User
-	} from '@lucide/svelte';
-	import { createForm, Field } from '@tanstack/svelte-form';
+	import { EyeIcon, Icon, LockIcon, MailIcon, TriangleAlert, User } from '@lucide/svelte';
+	import { createForm } from '@tanstack/svelte-form';
 	import type { AnyFieldApi } from '@tanstack/svelte-form';
 	import { z } from 'zod';
 	import SpookCordLogo from './SpookCordLogo.svelte';
-	import type { ErrorContext } from 'better-auth/svelte';
 	import type { FullAutoFill } from 'svelte/elements';
-	import { blur, slide } from 'svelte/transition';
-
-	const { switchToSignUp } = $props<{ switchToSignUp: () => void }>();
-
-	let error = $state<undefined | ErrorContext>();
+	import { slide } from 'svelte/transition';
 
 	const validationSchema = z
 		.object({

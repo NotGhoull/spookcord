@@ -12,6 +12,8 @@
 	import type { FullAutoFill } from 'svelte/elements';
 	import { slide } from 'svelte/transition';
 
+	const { redirect }: { redirect?: string | null } = $props();
+
 	const validationSchema = z
 		.object({
 			name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -35,7 +37,7 @@
 				},
 				{
 					onSuccess: () => {
-						goto('/chat');
+						goto(redirect ?? '/chat');
 					},
 					onError: (error) => {
 						console.log(error.error.message || 'Sign up failed, unknown error');
@@ -135,8 +137,8 @@
 		</div>
 
 		<div class="text-center text-sm">
-			<span class="text-muted">Don't have an account?</span>
-			<span class="text-accent">Sign up</span>
+			<span class="text-muted">Already have an account?</span>
+			<a class="text-accent" href={`/login?${redirect ? `redirect=${redirect}` : ''}`}>Sign in</a>
 		</div>
 	</div>
 </div>

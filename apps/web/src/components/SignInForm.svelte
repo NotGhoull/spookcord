@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { EyeIcon, Icon, LockIcon, MailIcon, TriangleAlert } from '@lucide/svelte';
+	import { AlertCircle, EyeIcon, Icon, LockIcon, MailIcon, TriangleAlert } from '@lucide/svelte';
 	import { createForm } from '@tanstack/svelte-form';
 	import type { AnyFieldApi } from '@tanstack/svelte-form';
 	import { z } from 'zod';
@@ -12,6 +12,8 @@
 	import type { FullAutoFill } from 'svelte/elements';
 	import { slide } from 'svelte/transition';
 	import type { ErrorContext } from 'better-auth/svelte';
+
+	const { redirect, urlError }: { redirect?: string | null; urlError?: string | null } = $props();
 
 	let error = $state<ErrorContext>();
 
@@ -27,7 +29,7 @@
 			await authClient.signIn.email(
 				{ email: value.email, password: value.password },
 				{
-					onSuccess: () => goto('/chat'),
+					onSuccess: () => goto(redirect ?? '/chat'),
 					onError: (_error) => {
 						// Despite the type saying it'll always be error context, it won't always be defined
 
@@ -69,7 +71,15 @@
 			<p class="text-muted text-sm">Sign in to your <b>SpookCord</b> account</p>
 		</div>
 
-		<div class="bg-card relative border-separate rounded-lg border p-6 shadow-lg backdrop-blur-sm">
+		<div
+			class="bg-card relative flex border-separate flex-col gap-2 rounded-lg border p-6 shadow-lg backdrop-blur-sm"
+		>
+			{#if urlError == 'unauthorized'}
+				<div class="flex w-full items-center justify-center gap-2 text-red-500">
+					<AlertCircle class="h-5 w-5" />
+					<p>You need to be signed in to view this page</p>
+				</div>
+			{/if}
 			<form
 				class="space-y-6"
 				onsubmit={(e) => {

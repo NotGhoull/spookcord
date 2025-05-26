@@ -2,16 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { authClient } from '$lib/auth-client';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { AlertCircle, EyeIcon, Icon, LockIcon, MailIcon, TriangleAlert } from '@lucide/svelte';
+	import { AlertCircle, LockIcon, MailIcon } from '@lucide/svelte';
 	import { createForm } from '@tanstack/svelte-form';
-	import type { AnyFieldApi } from '@tanstack/svelte-form';
 	import { z } from 'zod';
 	import SpookCordLogo from './SpookCordLogo.svelte';
-	import type { FullAutoFill } from 'svelte/elements';
-	import { slide } from 'svelte/transition';
 	import type { ErrorContext } from 'better-auth/svelte';
+	import ErrorMessage from './LoginSignup/ErrorMessage.svelte';
+	import InputItem from './LoginSignup/InputItem.svelte';
 
 	const { redirect, urlError }: { redirect?: string | null; urlError?: string | null } = $props();
 
@@ -91,27 +88,36 @@
 			>
 				<form.Field name="email">
 					{#snippet children(field)}
-						{@render inputItem(field, 'Email', 'email', 'you@spookcord.app', 'email', MailIcon)}
+						<InputItem
+							{field}
+							name="Email"
+							initialInputType="email"
+							placeholder="you@spookcord.app"
+							autocomplete="email"
+							icon={MailIcon}
+						/>
 					{/snippet}
 				</form.Field>
 				<form.Field name="password">
 					{#snippet children(field)}
-						{@render inputItem(
-							field,
-							'Password',
-							'password',
-							'password',
-							'current-password',
-							LockIcon,
-							true
-						)}
+						<InputItem
+							{field}
+							name="Password"
+							initialInputType="password"
+							placeholder="password"
+							autocomplete="current-password"
+							icon={LockIcon}
+							password
+						/>
 					{/snippet}
 				</form.Field>
 
 				<form.Subscribe>
 					{#snippet children(state)}
 						{#if state.isSubmitSuccessful}
-							{@render errorMessage(error?.response.statusText ?? 'Incorrect username or password')}
+							<ErrorMessage
+								message={error?.response.statusText ?? 'Incorrect username or password'}
+							/>
 						{/if}
 						<Button
 							type="submit"
@@ -129,56 +135,3 @@
 		</div>
 	</div>
 </div>
-
-{#snippet inputItem(
-	field: AnyFieldApi,
-	name: string,
-	inputType: string,
-	placeholder: string,
-	autocomplete: FullAutoFill,
-	icon: typeof Icon,
-	password?: boolean
-)}
-	<div class="space-y-2">
-		<Label for={field.name}>{name}</Label>
-		<div class="relative">
-			<!-- I know this is depreicated, but it works -->
-			<!-- svelte-ignore svelte_component_deprecated -->
-			<svelte:component this={icon} class="text-muted absolute top-2.5 left-3 h-5 w-5" />
-
-			<Input
-				id={field.name}
-				name={field.name}
-				type={inputType}
-				{placeholder}
-				{autocomplete}
-				class="placeholder:text-muted pl-10"
-				onblur={field.handleBlur}
-				value={field.state.value}
-				oninput={(e: Event) => {
-					const target = e.target as HTMLInputElement;
-					field.handleChange(target.value);
-				}}
-			/>
-
-			{#if password}
-				<button class="text-muted hover:text-foreground absolute top-2.5 right-3">
-					<EyeIcon class="h-5 w-5" />
-				</button>
-			{/if}
-		</div>
-		{#each field.state.meta.errors as error}
-			{@render errorMessage(error.message ?? 'Unkown error')}
-		{/each}
-	</div>
-{/snippet}
-
-{#snippet errorMessage(message: string)}
-	<div
-		class="flex w-full flex-row gap-1 align-middle text-sm text-red-500"
-		transition:slide={{ axis: 'y', duration: 680 }}
-	>
-		<TriangleAlert size="18" />
-		<p>{message}</p>
-	</div>
-{/snippet}

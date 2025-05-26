@@ -125,7 +125,7 @@
 
 		<div class="text-center text-sm">
 			<span class="text-muted">Don't have an account?</span>
-			<span class="text-accent">Sign up</span>
+			<a class="text-accent" href={`/signup?${redirect ? `redirect=${redirect}` : ''}`}>Sign up</a>
 		</div>
 	</div>
 </div>

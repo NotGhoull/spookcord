@@ -11,7 +11,7 @@
 	} from '@lucide/svelte';
 	import MessageComponent from './MessageComponent.svelte';
 	import ChatInput from './ChatInput.svelte';
-	import { onMount, onDestroy, tick } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { orpc } from '$lib/orpc';
 	import { fly, blur } from 'svelte/transition';
 	import { isMemberViewVisible } from '$lib/localStates/sidebar';
@@ -133,7 +133,7 @@
 </script>
 
 <div class="flex h-full w-full flex-col">
-	<div class="border-separator/20 flex h-16 items-center justify-between border-b px-4">
+	<div class="border-separator/20 flex h-16 items-center justify-between border-b p-3">
 		<div class="flex items-center gap-2">
 			<div class="bg-button/50 flex h-8 w-8 items-center justify-center rounded-lg">
 				<Hash class="text-accent h-5 w-5" />
@@ -154,7 +154,7 @@
 		</div>
 	</div>
 
-	<ScrollArea class="grow px-4 py-4" ref={scrollAreaRef}>
+	<ScrollArea class="grow px-4 py-4 pt-0" ref={scrollAreaRef}>
 		{#if $CurrentChannel === 'NO_CHANNEL'}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
 				<MessageCircleQuestionIcon class="size-20" />

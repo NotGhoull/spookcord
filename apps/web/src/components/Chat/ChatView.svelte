@@ -2,171 +2,134 @@
 
 <script lang="ts">
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { Hash, MessageCircleDashedIcon, Users } from '@lucide/svelte';
+	import {
+		Hash,
+		MessageCircleDashedIcon,
+		MessageCircleQuestionIcon,
+		ServerCrashIcon,
+		Users
+	} from '@lucide/svelte';
 	import MessageComponent from './MessageComponent.svelte';
 	import ChatInput from './ChatInput.svelte';
-	import { createClient } from '@supabase/supabase-js';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { orpc } from '$lib/orpc';
 	import { fly, blur } from 'svelte/transition';
 	import { isMemberViewVisible } from '$lib/localStates/sidebar';
 	import { CurrentChannel } from '$lib/localStates/chat';
-	import { env } from '$env/dynamic/public';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { derived, get } from 'svelte/store';
+	import { message } from '@spookcord/db-schema';
+	import { supabaseService } from '$lib/supabase';
+	import { toast } from 'svelte-sonner';
 
-	type Message = {
-		id: string;
-		body: string;
-		createdAt: Date;
-		updatedAt: Date;
-		senderId: string;
-		channelId: string;
-	};
+	const queryClient = useQueryClient();
 
-	let messages = $state<Message[]>([]);
+	// State management stufF
+	let scrollAreaRef: HTMLDivElement | undefined = $state(); // TODO: Make it so we scroll to the bottom on new message
 
-	let orderedMessages = $derived.by(() => {
-		const messagesWithParsedDates = messages.map((msg) => ({
+	// Query
+	const messagesQuery = createQuery<(typeof message)[]>(
+		derived(CurrentChannel, ($CurrentChannel) =>
+			orpc.getMessages.queryOptions({
+				input: { channelId: $CurrentChannel },
+				staleTime: 300000 // 5 mins
+			})
+		)
+	);
+
+	const currentChannelQuery = createQuery(
+		derived(CurrentChannel, ($CurrentChannel) =>
+			orpc.getChannelById.queryOptions({ input: { id: $CurrentChannel } })
+		)
+	);
+
+	const JWTQuery = createQuery<string>(
+		orpc.getJWT.queryOptions({
+			refetchInterval: 3000000, // 50 minutes
+			staleTime: 2400000, // Stale after 40 mins
+			experimental_prefetchInRender: true
+		})
+	);
+
+	// This code works, despite having an error
+	let realMessages: (typeof message)[] = $derived.by(() => {
+		if (!$messagesQuery.data) {
+			return [];
+		}
+		const messagesWithParsedDates = $messagesQuery.data.map((msg) => ({
 			...msg,
-			createdAt:
-				msg.createdAt instanceof Date
-					? msg.createdAt
-					: msg.createdAt
-						? new Date(msg.createdAt)
-						: new Date()
+			createdAt: msg.createdAt instanceof Date ? msg.createdAt : new Date()
 		}));
 
-		// This can easily be refactored on the server side.
-		const sorted = [...messagesWithParsedDates].sort((a, b) => {
-			const dateA = a.createdAt instanceof Date ? a.createdAt : new Date();
-			const dateB = b.createdAt instanceof Date ? b.createdAt : new Date();
-			return dateA.getTime() - dateB.getTime();
-		});
-
-		return sorted;
+		return [...messagesWithParsedDates].sort(
+			(a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+		);
 	});
 
-	let supabaseClient: ReturnType<typeof createClient>;
-	let realtimeChannel: ReturnType<typeof supabaseClient.channel> | null = null;
-	let shouldStartConnection = $state(false);
-
-	let isConnectedToRealtime = $state(false);
-	let loadingStatusText = $state('Loading messages...');
-	let loadingTimeout: ReturnType<typeof setTimeout>;
-
-	function connectToRealtime(channel: string) {
-		if (realtimeChannel != null) {
-			realtimeChannel.unsubscribe();
-			console.log('Unsubscribed');
-		}
-
-		realtimeChannel = supabaseClient
-			.channel(`channel:${channel}`)
-			.on(
-				'postgres_changes',
-				{
-					event: '*',
-					schema: 'public',
-					table: 'message',
-					filter: `channel_id=eq.${channel}`
-				},
-				(payload) => {
-					console.log('GOT REALTIME UPDATE FOR MESSAGE!', payload);
-					const old = payload.old as Partial<Message>;
-
-					switch (payload.eventType) {
-						case 'UPDATE':
-							messages = messages.map((message) =>
-								message.id === old.id ? ({ ...message, ...payload.new } as Message) : message
-							);
-							break;
-						case 'INSERT':
-							messages = [...messages, payload.new as Message];
-							break;
-						case 'DELETE':
-							console.log('Delete message fired');
-							messages = messages.filter((message) => message.id !== old.id);
-							console.log('Deleted message!');
-							break;
-					}
-				}
-			)
-			.subscribe((status, err) => {
-				if (status === 'SUBSCRIBED') {
-					console.log(`Successfully subscribed to channel:${channel} messages`);
-					isConnectedToRealtime = true;
-					clearTimeout(loadingTimeout);
-				} else if (status === 'CHANNEL_ERROR') {
-					console.error(`Realtime channel error for ${channel}:`, err, status);
-					loadingStatusText = `Connection error: ${err?.message || 'Check network & RLS'}`;
-					clearTimeout(loadingTimeout);
-				} else if (status === 'TIMED_OUT') {
-					console.warn(`Realtime subscription timed out for ${channel}.`);
-					loadingStatusText = 'Connection timed out. Check network or server.';
-					clearTimeout(loadingTimeout);
-				} else {
-					console.log(`Realtime channel status: ${status}`);
-				}
-			});
-	}
-
 	$effect(() => {
-		if (shouldStartConnection == false) {
-			return;
+		if ($CurrentChannel === 'NO_CHANNEL') {
+			// Don't connect, if we're not in any channel
+			supabaseService.disconnect();
 		}
 
-		connectToRealtime($CurrentChannel);
-		async function get() {
-			messages = await orpc.getMessages.call({ channelId: $CurrentChannel });
-			console.log('Messages updated!');
-		}
-		get();
+		supabaseService.connectToMessagesChannel($CurrentChannel, (state) => {
+			switch (state.eventType) {
+				case 'INSERT':
+					// Optimistic update svelte query cache
+					queryClient.setQueryData(
+						orpc.getMessages.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+						(oldData: (typeof message)[] | undefined) => {
+							const newData = state.new;
+							// Avoid adding duplicates
+							if (oldData && !oldData.some((msg) => msg.id === newData.id)) {
+								return [...oldData, newData];
+							}
+							return oldData || [newData];
+						}
+					);
+					break;
+
+				case 'UPDATE':
+					queryClient.setQueryData(
+						orpc.getMessages.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+						(oldData: (typeof message)[] | undefined) => {
+							if (oldData) {
+								return oldData.map((message) =>
+									message.id === state.old.id ? { ...message, ...state.new } : message
+								);
+							}
+						}
+					);
+					break;
+
+				case 'DELETE':
+					queryClient.setQueryData(
+						orpc.getMessages.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+						(oldData: (typeof message)[] | undefined) => {
+							if (oldData) {
+								return oldData.filter((message) => message.id !== state.old.id);
+							}
+							return oldData;
+						}
+					);
+			}
+		});
 	});
 
 	onMount(async () => {
-		const jwt = await orpc.getJWT.call({});
-
-		loadingTimeout = setTimeout(() => {
-			if (!shouldStartConnection) {
-				loadingStatusText = 'Loading (Are you actually connected to the internet?)';
-			}
-		}, 30000); // 30 seconds
-
-		// TODO: This should be moved to lib/supabaseClient
-		supabaseClient = createClient(env.PUBLIC_SUPABASE_URL, jwt);
-		supabaseClient.realtime.setAuth(jwt); // <- This can still be done here though
-		//                                          - Or we add an argument to create a client with JWT like above
-
-		shouldStartConnection = true;
+		await $JWTQuery.promise
+			.then((data) => {
+				supabaseService.init(data);
+			})
+			.catch((err) => {
+				toast.error('FATAL ERROR, NO JWT!');
+				throw new Error(err);
+			});
 	});
 
 	onDestroy(() => {
-		clearTimeout(loadingTimeout);
-		if (realtimeChannel) {
-			console.log(`Unsubscribing from channel:${CurrentChannel}`);
-			realtimeChannel.unsubscribe();
-		}
+		supabaseService.disconnect();
 	});
-
-	let currentChannelName = $state();
-
-	$effect(() => {
-		console.log('[A15] Effect triggered!');
-		async function get() {
-			await orpc.getChannelById
-				.call({ id: $CurrentChannel })
-				.then((data) => {
-					console.log('[A15] Got resp!');
-					currentChannelName = data?.name ?? 'Unknown';
-				})
-				.catch((e) => {
-					currentChannelName = 'ERROR!';
-					console.error(e);
-				});
-		}
-		get();
-	});
-
-	$inspect(messages);
 </script>
 
 <div class="flex h-full w-full flex-col">
@@ -175,7 +138,9 @@
 			<div class="bg-button/50 flex h-8 w-8 items-center justify-center rounded-lg">
 				<Hash class="text-accent h-5 w-5" />
 			</div>
-			<h2 class="text-accent text-lg font-medium">{currentChannelName}</h2>
+			<h2 class="text-accent text-lg font-medium">
+				{$currentChannelQuery.data?.name ?? 'Loading'}
+			</h2>
 		</div>
 		<div class="flex items-center gap-2">
 			<button
@@ -189,15 +154,32 @@
 		</div>
 	</div>
 
-	<ScrollArea class="grow px-4 py-4">
-		{#if !isConnectedToRealtime}
+	<ScrollArea class="grow px-4 py-4" ref={scrollAreaRef}>
+		{#if $CurrentChannel === 'NO_CHANNEL'}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
-				<!-- <MessageCircleDashedIcon class="size-20" /> -->
-				<div class="loader"></div>
-				<h1 class="text-3xl font-bold">{loadingStatusText}</h1>
-				<p></p>
+				<MessageCircleQuestionIcon class="size-20" />
+				<h1 class="text-3xl font-bold">Did you get lost?</h1>
+				<p>Select a channel on the side to start talking to spirits</p>
 			</div>
-		{:else if orderedMessages.length === 0}
+		{:else if get(supabaseService.statusText) === 'Connecting...' || $messagesQuery.isLoading}
+			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
+				<div class="loader"></div>
+				<h1 class="text-3xl font-bold">Loading messages...</h1>
+				<p class="text-muted">
+					{$messagesQuery.isFetching ? 'Fetching...' : 'Awaiting connection...'}
+				</p>
+			</div>
+		{:else if $messagesQuery.isError}
+			<div
+				class="text-destructive flex h-full w-full flex-col items-center justify-center gap-2"
+				transition:blur
+			>
+				<ServerCrashIcon class="size-20" />
+				<h1 class="text-3xl font-bold">Something went wrong!</h1>
+				<p>There was an issue fetching messages. Please try again.</p>
+				<p>Error: {$messagesQuery.error.message}</p>
+			</div>
+		{:else if realMessages.length === 0}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
 				<MessageCircleDashedIcon class="size-20" />
 				<h1 class="text-3xl font-bold">No messages yet</h1>
@@ -205,12 +187,12 @@
 			</div>
 		{:else}
 			<div class="space-y-6">
-				{#each orderedMessages as message (message.id)}
+				{#each realMessages as message (message.id)}
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
 						<MessageComponent
-							senderId={message.senderId}
-							createdAt={message.createdAt}
-							text={message.body}
+							senderId={message.senderId as unknown as string}
+							createdAt={message.createdAt as unknown as Date}
+							text={message.body as unknown as string}
 						/>
 					</div>
 				{/each}

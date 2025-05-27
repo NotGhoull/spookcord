@@ -180,7 +180,14 @@ export const appRouter = {
 				}
 			});
 			return found;
-		})
+		}),
+
+	getUserServers: protectedProcedure.handler(async ({ context }) => {
+		const found = await db.query.serverMembers.findMany({
+			where: eq(serverMembers.userId, context.session.user.id)
+		});
+		return found;
+	})
 };
 
 /**

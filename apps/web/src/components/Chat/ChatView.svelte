@@ -31,15 +31,19 @@
 	const messagesQuery = createQuery<(typeof message)[]>(
 		derived(CurrentChannel, ($CurrentChannel) =>
 			orpc.getMessages.queryOptions({
-				input: { channelId: $CurrentChannel },
-				staleTime: 300000 // 5 mins
+				input: { channelId: $CurrentChannel }
 			})
 		)
 	);
 
 	const currentChannelQuery = createQuery(
 		derived(CurrentChannel, ($CurrentChannel) =>
-			orpc.getChannelById.queryOptions({ input: { id: $CurrentChannel } })
+			orpc.getChannelById.queryOptions({
+				input: {
+					id: $CurrentChannel,
+					staleTime: 300000 // 5 mins
+				}
+			})
 		)
 	);
 

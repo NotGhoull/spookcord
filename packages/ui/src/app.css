@@ -1,0 +1,181 @@
+@import 'tailwindcss';
+@config "../tailwind.config.ts";
+
+@layer base {
+	/* Example in src/app.css (or similar global CSS file) */
+	:root {
+		--background: 0 0% 100%; /* Example Light Mode */
+		--foreground: 222.2 47.4% 11.2%;
+
+		--muted: 210 40% 96.1%;
+		--muted-foreground: 215.4 16.3% 46.9%;
+
+		/* Spookcord's Primary Orange/Accent */
+		--primary: 29.8 100% 55.1%; /* This is an orange HSL value (e.g., #FF6600) */
+		--primary-foreground: 0 0% 100%; /* White text on primary */
+
+		--accent: 29.8 100% 55.1%; /* Same as primary for highlights */
+		--accent-foreground: 0 0% 100%; /* White text on accent */
+
+		/* Spookcord's Secondary Purple/Blue */
+		--secondary: 250 80% 50%; /* Example purple/blue HSL value */
+		--secondary-foreground: 0 0% 100%; /* White text on secondary */
+
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 210 40% 98%;
+
+		--border: 214.3 31.8% 91.4%;
+		--input: 214.3 31.8% 91.4%;
+		--input-bg: 0 0% 100%; /* Example: a slightly off-white for input backgrounds */
+		--ring: 222.2 47.4% 11.2%;
+
+		--card: 0 0% 100%;
+		--card-foreground: 222.2 47.4% 11.2%;
+
+		--popover: 0 0% 100%;
+		--popover-foreground: 222.2 47.4% 11.2%;
+
+		--tooltip: 222.2 47.4% 11.2%; /* Dark background for tooltip */
+
+		/* Specific UI Section Backgrounds (adjust as needed for your theme) */
+		--sidebar: 220 15% 15%; /* Example: dark gray */
+		--channel-list: 220 15% 15%; /* Example: dark gray */
+		--chat-area: 220 10% 20%; /* Example: slightly lighter dark gray */
+		--members-list: 220 15% 15%; /* Example: dark gray */
+		--user-panel: 220 15% 15%; /* Example: dark gray */
+
+		/* Specific Element Colors */
+		--separator: 210 40% 96.1%; /* Light gray for dividers */
+		--button: 210 40% 96.1%; /* Example default button color */
+		--button-hover: 215.4 16.3% 46.9%; /* Example default button hover */
+		--message-hover: 215.4 16.3% 46.9%; /* Example message hover */
+
+		--radius: 0.5rem;
+	}
+
+	.dark {
+		--background: 224 71.4% 4.1%;
+		--foreground: 210 40% 98%;
+
+		--muted: 216 12.2% 83.9%;
+		--muted-foreground: 215 20.4% 69%;
+
+		/* Spookcord's Primary Orange/Accent - Dark Mode */
+		--primary: 29.8 100% 55.1%; /* Same orange base in dark mode */
+		--primary-foreground: 0 0% 100%;
+
+		/* TODO: Change this to a accent colour */
+		--accent: 29.8 100% 55.1%;
+		--accent-foreground: 0 0% 100%;
+
+		/* Spookcord's Secondary Purple/Blue - Dark Mode */
+		--secondary: 250 80% 50%; /* Same purple/blue base in dark mode */
+		--secondary-foreground: 0 0% 100%;
+
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 210 40% 98%;
+
+		--border: 217.2 32.6% 17.5%;
+		--input: 217.2 32.6% 17.5%;
+		--input-bg: 220 15% 10%; /* Example: dark background for input fields */
+		--ring: 212.7 26.8% 83.9%;
+
+		--card: 224 71.4% 4.1%;
+		--card-foreground: 210 40% 98%;
+
+		--popover: 224 71.4% 4.1%;
+		--popover-foreground: 210 40% 98%;
+
+		--tooltip: 210 40% 98%; /* Light text on dark tooltip */
+
+		/* Specific UI Section Backgrounds - Dark Mode */
+		--sidebar: 220 15% 8%; /* Even darker gray */
+		--channel-list: 220 15% 8%;
+		--chat-area: 220 10% 12%;
+		--members-list: 220 15% 8%;
+		--user-panel: 220 15% 8%;
+
+		/* Specific Element Colors - Dark Mode */
+		--separator: 217.2 32.6% 17.5%; /* Darker gray for dividers */
+		--button: 217.2 32.6% 17.5%; /* Example default button color */
+		--button-hover: 215.4 16.3% 46.9%; /* Example default button hover */
+		--message-hover: 215.4 16.3% 46.9%; /* Example message hover */
+	}
+}
+
+@layer base {
+	* {
+		@apply border-separator;
+	}
+	body {
+		@apply bg-background text-foreground;
+		font-feature-settings:
+			'rlig' 1,
+			'calt' 1;
+	}
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: hsl(var(--button));
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: hsl(var(--button-hover));
+}
+
+/* Subtle animations */
+@keyframes float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+}
+
+@keyframes pulse-glow {
+	0%,
+	100% {
+		opacity: 0.5;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.8;
+		transform: scale(1.05);
+	}
+}
+
+.animate-float {
+	animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+	animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Typography */
+body {
+	/* font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+  letter-spacing: -0.011em; */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	letter-spacing: -0.021em;
+}

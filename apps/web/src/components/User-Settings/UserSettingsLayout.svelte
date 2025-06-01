@@ -1,5 +1,4 @@
 <script>
-	import Button from '$lib/components/ui/button/button.svelte';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { cn } from '$lib/utils';
 	import {
@@ -16,6 +15,8 @@
 	} from '@lucide/svelte';
 	import UserProfileSettings from './UserProfileSettings.svelte';
 	import { Dialog } from 'bits-ui';
+	import { SettingsSectionButton } from '@spookcord/ui';
+	import { toast } from 'svelte-sonner';
 
 	let { open = $bindable() } = $props();
 
@@ -41,18 +42,9 @@
 		/>
 		<Dialog.Content
 			class="border-separator/20 bg-background/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex h-full max-h-[800px] w-full max-w-6xl translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-2xl border shadow-[0_0_30px_rgba(0,0,0,0.3)] outline-hidden"
-			trapFocus={true}
-			onEscapeKeydown={(e) => {
-				e.preventDefault(); // Prevent default close behavior if you want to add custom logic [cite: 445]
-				open = false; // Manually close the dialog if escape is pressed
-			}}
-			onInteractOutside={(e) => {
-				e.preventDefault(); // Prevent default close behavior if you want to add custom logic [cite: 453]
-				open = false; // Manually close the dialog if clicked outside
-			}}
 		>
 			<Dialog.Close
-				class="text-muted hover:bg-button/50 hover:text-accent absolute top-4 right-4 z-50 rounded-lg p-1.5 transition-colors duration-200"
+				class="text-muted hover:bg-button/50 hover:text-primary absolute top-4 right-4 z-50 cursor-pointer rounded-lg p-1.5 transition-colors duration-200"
 			>
 				<XIcon class="h-5 w-5" />
 			</Dialog.Close>
@@ -64,37 +56,31 @@
 				)}
 			>
 				<div class="p-6">
-					<Dialog.Title class="text-accent text-xl font-bold">User settings</Dialog.Title>
+					<Dialog.Title class="text-primary text-xl font-bold">User settings</Dialog.Title>
 				</div>
 
 				<ScrollArea class="grow">
 					<div class="flex flex-col space-y-1 p-2">
 						{#each settingsSections as section (section.id)}
-							<button
-								aria-label={section.label}
-								class={cn(
-									'flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200',
-									activeSection === section.id
-										? 'bg-accent/20 text-accent'
-										: 'text-muted hover:bg-button/50 hover:text-foreground'
-								)}
+							<SettingsSectionButton
+								label={section.label}
+								icon={section.icon}
+								selected={activeSection === section.id}
 								onclick={() => (activeSection = section.id)}
-							>
-								<section.icon class="h-5 w-5" />
-								<span>{section.label}</span>
-							</button>
+							/>
 						{/each}
 					</div>
 				</ScrollArea>
 
 				<div class="border-separator/20 border-t p-4">
-					<button
-						aria-label="Log out"
-						class="bg-destructive flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200"
-					>
-						<LogOutIcon class="h-4 w-4" />
-						Log out
-					</button>
+					<SettingsSectionButton
+						label="Log out"
+						variant="destructive"
+						icon={LogOutIcon}
+						onclick={() => {
+							toast.warning('Unimplemented');
+						}}
+					/>
 				</div>
 			</div>
 

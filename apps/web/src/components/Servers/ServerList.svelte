@@ -14,7 +14,7 @@
 			<ServerButton selfId={'HOME'} />
 			<div class="relative mx-auto h-1 w-10 overflow-hidden rounded-full">
 				<div class="bg-separator absolute inset-0 opacity-30"></div>
-				<div class="bg-accent absolute inset-y-0 left-0 w-full animate-pulse opacity-30"></div>
+				<div class="bg-primary absolute inset-y-0 left-0 w-full animate-pulse opacity-30"></div>
 			</div>
 			{#if $servers.isLoading}
 				<p>Loading...</p>

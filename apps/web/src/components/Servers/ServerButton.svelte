@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { CurrentChannel, CurrentServer } from '$lib/localStates/chat';
+	import { CurrentServer } from '$lib/localStates/chat';
 	import JoinServerPopup from './JoinServerPopup.svelte';
 	import SpookCordLogo from '../SpookCordLogo.svelte';
 
@@ -32,7 +32,7 @@
 	}}
 	class={`group relative flex h-14 w-14 cursor-pointer items-center justify-center transition-all duration-300 ${
 		isActive
-			? 'bg-accent scale-105 rounded-2xl shadow-[0_0_15px_rgba(255,107,0,0.3)]'
+			? 'bg-primary scale-105 rounded-2xl shadow-[0_0_15px_rgba(255,107,0,0.3)]'
 			: 'bg-button/70 hover:bg-button rounded-[20px] hover:scale-105 hover:rounded-2xl hover:shadow-[0_0_10px_rgba(255,107,0,0.15)]'
 	}`}
 >
@@ -43,13 +43,13 @@
 
 	<!-- Glow effect -->
 	<div
-		class={`bg-accent absolute inset-0 rounded-full blur-md transition-opacity duration-300 ${isActive ? 'opacity-40' : 'opacity-0 group-hover:opacity-20'}`}
+		class={`bg-primary absolute inset-0 rounded-full blur-md transition-opacity duration-300 ${isActive ? 'opacity-40' : 'opacity-0 group-hover:opacity-20'}`}
 	></div>
 
 	<!-- Notification -->
 	{#if hasNotification}
 		<span
-			class="bg-accent absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-black"
+			class="bg-primary absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-black"
 		>
 			!
 		</span>

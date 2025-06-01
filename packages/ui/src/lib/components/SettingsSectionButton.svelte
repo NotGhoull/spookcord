@@ -8,8 +8,8 @@
 		base: 'flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200',
 		variants: {
 			variant: {
-				default: 'text-muted-foreground hover:bg-button/50 hover:text-foreground',
-				selected: 'bg-accent/20 text-accent',
+				default: 'text-muted hover:bg-button/50 hover:text-foreground',
+				selected: 'bg-primary/20 text-primary',
 				destructive: 'text-background bg-destructive'
 			}
 		},
@@ -35,16 +35,18 @@
 	let {
 		class: className,
 		label,
-		selected,
-		variant = selected ? 'selected' : 'default',
+		selected = false,
+		variant,
 		icon,
 		...restProps
 	}: SettingsSectionButtonProps = $props();
+
+	const currentVariant = $derived(selected ? 'selected' : variant);
 </script>
 
 <button
 	aria-label={label}
-	class={cn(settingsSectionButtonVaraints({ variant }), className)}
+	class={cn(settingsSectionButtonVaraints({ variant: currentVariant }), className)}
 	{...restProps}
 >
 	<svelte:component this={icon} class="h-5 w-5" />

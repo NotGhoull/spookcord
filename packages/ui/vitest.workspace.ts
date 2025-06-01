@@ -17,7 +17,7 @@ export default defineWorkspace([
 				enabled: true,
 				provider: 'playwright',
 				// https://vitest.dev/guide/browser/playwright
-				headless: false,
+				headless: true,
 				instances: [{ browser: 'chromium' }]
 			},
 			setupFiles: ['./.storybook/vitest.setup.ts']

@@ -4,28 +4,7 @@
 	import { CurrentServer } from '$lib/localStates/chat';
 	import { orpc } from '$lib/orpc';
 	import { Search, Shield } from '@lucide/svelte';
-	import { onMount } from 'svelte'; // onMount is not strictly needed for the CurrentServer subscription, but kept for general awareness if other onMount logic is added.
 
-	// Define interfaces for better type safety and readability (if using TypeScript)
-	/**
-	 * @typedef {object} Member
-	 * @property {string} id
-	 * @property {string} name
-	 * @property {string} avatar
-	 * @property {string} color
-	 * @property {string} statusText
-	 * @property {Array<{ id: string; name: string; icon: string }>} badges
-	 */
-
-	/**
-	 * @typedef {object} Role
-	 * @property {string} id
-	 * @property {string} name
-	 * @property {string} color
-	 * @property {Member[]} members
-	 */
-
-	/** @type {Role[]} */
 	let roles = $state([
 		{
 			id: 'default',
@@ -50,24 +29,6 @@
 	let search = $state('');
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
-
-	const filteredRoles = $derived(() => {
-		if (!roles || roles.length === 0) return [];
-
-		const lowerCaseSearch = search.toLowerCase();
-
-		return roles
-			.map((role) => {
-				const filteredMembers = role.members.filter((member) =>
-					member.name.toLowerCase().includes(lowerCaseSearch)
-				);
-				return {
-					...role,
-					members: filteredMembers
-				};
-			})
-			.filter((role) => role.members.length > 0);
-	});
 
 	// Handle fetching server data
 	CurrentServer.subscribe(async (newServerId) => {
@@ -120,8 +81,7 @@
 
 				console.log('new members: ', newMembers);
 
-				// Assuming all fetched members go into the "Default" role for now.
-				// If your application has actual roles, you would process `serverData.roles` and assign members accordingly.
+				// Assuming all fetched members go into the "Default" role
 				roles = [
 					{
 						...roles[0], // Keep properties of the default role

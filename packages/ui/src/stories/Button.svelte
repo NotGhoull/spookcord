@@ -13,9 +13,9 @@
 				primary:
 					'bg-primary text-white hover:bg-primary/90 shadow-[0_5px_15px_rgba(255,102,0,0.2)] hover:shadow-[0_8px_20px_rgba(255,102,0,0.3)]',
 				destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-				outline: 'border-input bg-background hover:bg-accent hover:text-accent-foreground border',
+				outline: 'border-input bg-background hover:bg-primary hover:text-primary-foreground border',
 				secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-				ghost: 'hover:bg-accent/20 hover:text-accent',
+				ghost: 'hover:bg-primary/20 hover:text-primary',
 				link: 'text-primary underline-offset-4 hover:underline',
 				gradient:
 					'bg-gradient-to-r from-primary to-primary/90 text-white hover:from-primary/90 hover:to-primary shadow-[0_12px_24px_-6px_rgba(255,102,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300'

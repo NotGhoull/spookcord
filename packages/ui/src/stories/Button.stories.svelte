@@ -109,7 +109,7 @@
 	play={async ({ canvas }) => {
 		const button = canvas.getByRole('button', { name: 'Ghost Button' });
 		expect(button).toBeInTheDocument();
-		expect(button).toHaveClass('hover:bg-accent/20', 'hover:text-accent');
+		expect(button).toHaveClass('hover:bg-primary/20', 'hover:text-primary');
 	}}
 	name="Ghost Variant"
 	args={{ variant: 'ghost' }}

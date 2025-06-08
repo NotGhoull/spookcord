@@ -6,6 +6,31 @@ import { logger } from 'hono/logger';
 import { auth } from './lib/auth';
 import { createContext } from './lib/context';
 import { appRouter } from './routers/index';
+import z from 'zod/v4';
+import { env } from 'bun';
+
+// Envrioment variable stuff
+const envSchema = z.object({
+	CORS_ORIGIN: z.url(),
+	BETTER_AUTH_SECRET: z
+		.string()
+		.min(15, 'Please make sure your secret is secure. (Must be at least 15 characters)'),
+	BETTER_AUTH_URL: z.url(),
+	DATABASE_URL: z.url({ protocol: /^postgresql$/ }),
+	SUPABASE_JWT_SECRET: z.string().min(15, 'Please make sure your JWT_SECRET is secure.'),
+	PORT: z.number('Port must be a number').optional().default(3000)
+});
+
+const result = envSchema.safeParse({
+	...env
+});
+
+if (result.error) {
+	const pretty = z.prettifyError(result.error);
+	throw new Error(`Please fix enviroment variable errors.\n\n${pretty}`);
+}
+
+console.log('Enviroment OK!');
 
 const app = new Hono();
 
@@ -39,4 +64,7 @@ app.get('/', (c) => {
 	return c.text('OK');
 });
 
-export default app;
+export default {
+	port: 3000,
+	fetch: app.fetch
+};

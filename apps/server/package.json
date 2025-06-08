@@ -24,7 +24,7 @@
 		"hono": "^4.7.10",
 		"jsonwebtoken": "^9.0.2",
 		"pg": "^latest",
-		"zod": "^3.24.4"
+		"zod": "^3.25.56"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.2.13",

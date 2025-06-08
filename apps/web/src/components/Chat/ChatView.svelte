@@ -21,6 +21,7 @@
 	import { message } from '@spookcord/db-schema';
 	import { supabaseService } from '$lib/supabase';
 	import { toast } from 'svelte-sonner';
+	import { Message } from '@spookcord/ui';
 
 	const queryClient = useQueryClient();
 
@@ -193,10 +194,15 @@
 			<div class="space-y-6">
 				{#each realMessages as message (message.id)}
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
-						<MessageComponent
+						<!-- <MessageComponent
 							senderId={message.senderId as unknown as string}
 							createdAt={message.createdAt as unknown as Date}
 							text={message.body as unknown as string}
+						/> -->
+						<Message
+							text={message.body as unknown as string}
+							username={message.senderId as unknown as string}
+							createdAt={message.createdAt as unknown as Date}
 						/>
 					</div>
 				{/each}

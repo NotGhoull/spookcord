@@ -4,9 +4,16 @@
 	import { orpc } from '$lib/orpc';
 	import { ChevronDown, HashIcon, Plus } from '@lucide/svelte';
 	import { onMount } from 'svelte';
-	import { server } from '@spookcord/db-schema';
+	import { category, channel, server } from '@spookcord/db-schema';
+	import { ChannelListButton } from '@spookcord/ui';
+	import { type InferSelectModel } from 'drizzle-orm';
 
-	let fullData = $state();
+	let fullData:
+		| (InferSelectModel<typeof category> & {
+				channels: InferSelectModel<typeof channel>[];
+				server: InferSelectModel<typeof server>;
+		  })[]
+		| undefined = $state();
 	let serverName = $state('Unknown');
 	let canSend = $state(false);
 
@@ -66,40 +73,29 @@
 
 	<!-- Channels -->
 	<ScrollArea class="h-full">
-		{#each fullData as c}
-			<div class="mr-2 mb-5 ml-2">
-				<div class="mb-1 flex items-center px-1">
-					<button
-						class="text-muted hover:text-foreground group flex items-center gap-1 text-xs font-semibold transition-colors duration-200"
-					>
-						<ChevronDown class="h-4 w-4 transition-transform duration-200" />
-						<span class="group-hover:text-accent transition-colors duration-200">{c.name}</span>
-					</button>
-					<button
-						class="text-muted hover:text-accent ml-auto rounded-lg p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:opacity-100"
-						><Plus class="h-4 w-4" /></button
-					>
-				</div>
-
-				<div class="space-y-2">
-					{#each c.channels as channel}
+		{#if fullData}
+			{#each fullData as c}
+				<div class="mr-2 mb-5 ml-2">
+					<div class="mb-1 flex items-center px-1">
 						<button
-							class={`group relative flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${channel.active ? 'bg-button text-accent shadow-[0_0_8px_rgba(255,107,0,0.1)]' : 'text-muted hover:bg-button/50 hover:text-foreground'}`}
-							onclick={() => {
-								CurrentChannel.set(channel.id);
-							}}
+							class="text-muted hover:text-foreground group flex items-center gap-1 text-xs font-semibold transition-colors duration-200"
 						>
-							<!-- Inner glow on active channel -->
-							{#if $CurrentChannel == channel.id}
-								<span class="border-accent/10 absolute inset-0 rounded-xl border"></span>
-							{/if}
-							<HashIcon class="size-5 shrink-0 opacity-70" />
-							<span class="group-hover:text-accent truncate transition-colors duration-200"></span>
-							{channel.name ?? 'Name'}</button
+							<ChevronDown class="h-4 w-4 transition-transform duration-200" />
+							<span class="group-hover:text-accent transition-colors duration-200">{c.name}</span>
+						</button>
+						<button
+							class="text-muted hover:text-accent ml-auto rounded-lg p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:opacity-100"
+							><Plus class="h-4 w-4" /></button
 						>
-					{/each}
+					</div>
+
+					<div class="space-y-2">
+						{#each c.channels as channel}
+							<ChannelListButton name={channel.name} />
+						{/each}
+					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
+		{/if}
 	</ScrollArea>
 </div>

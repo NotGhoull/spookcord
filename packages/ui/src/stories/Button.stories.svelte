@@ -1,7 +1,7 @@
 <script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { LibraryIcon, TrashIcon, PlusIcon } from '@lucide/svelte';
-	import Button from './Button.svelte';
+	import Button from '$lib/components/Button.svelte';
 	import { expect } from 'storybook/internal/test';
 
 	// The default button component for spookcord

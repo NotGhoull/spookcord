@@ -56,11 +56,9 @@
 				// In a real application, you might fetch specific roles from the serverData
 				let newMembers: any = [];
 				for (const memberRef of serverData.members) {
-					console.log('[DEBUG -> MemberList] Checking ref ', memberRef);
 					try {
 						await orpc.getUserById.call({ id: memberRef.userId }).then((userData) => {
 							if (userData) {
-								console.log('[DEBUG -> MembersList] Got member! ', userData);
 								newMembers.push({
 									id: userData.id, // Ensure member has an ID
 									name: userData.name,
@@ -79,8 +77,6 @@
 					}
 				}
 
-				console.log('new members: ', newMembers);
-
 				// Assuming all fetched members go into the "Default" role
 				roles = [
 					{
@@ -88,9 +84,6 @@
 						members: newMembers
 					}
 				];
-
-				console.log('Updated members list for server:', newServerId);
-				console.log('Members list updated to: ', roles);
 			});
 		} catch (err) {
 			console.error('Error fetching server or user data:', err);

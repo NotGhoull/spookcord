@@ -26,11 +26,11 @@
 </script>
 
 <script lang="ts">
-	let { selected, name }: ChannelListButtonProps = $props();
+	let { selected, name, ...restProps }: ChannelListButtonProps = $props();
 	let shownVariant: ChannelListButtonVariants = $derived(selected ? 'selected' : 'default');
 </script>
 
-<button class={cn(channelListVaraints({ variant: shownVariant }))}>
+<button class={cn(channelListVaraints({ variant: shownVariant }))} {...restProps}>
 	{#if selected}
 		<span class="border-primary/10 absolute inset-0 rounded-xl border"></span>
 	{/if}

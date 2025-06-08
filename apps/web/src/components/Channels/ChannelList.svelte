@@ -2,79 +2,52 @@
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import { CurrentChannel, CurrentServer } from '$lib/localStates/chat';
 	import { orpc } from '$lib/orpc';
-	import { ChevronDown, HashIcon, Plus } from '@lucide/svelte';
-	import { onMount } from 'svelte';
+	import { ChevronDown, Plus } from '@lucide/svelte';
 	import { category, channel, server } from '@spookcord/db-schema';
 	import { ChannelListButton } from '@spookcord/ui';
-	import { type InferSelectModel } from 'drizzle-orm';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { derived } from 'svelte/store';
 
-	let fullData:
-		| (InferSelectModel<typeof category> & {
-				channels: InferSelectModel<typeof channel>[];
-				server: InferSelectModel<typeof server>;
-		  })[]
-		| undefined = $state();
-	let serverName = $state('Unknown');
-	let canSend = $state(false);
-
-	CurrentServer.subscribe(async (a) => {
-		if (canSend) {
-			await getData(a);
-		}
-	});
-
-	$effect(() => {
-		async function get() {
-			getData($CurrentServer);
-		}
-		get();
-	});
-
-	onMount(async () => {
-		await getData($CurrentServer);
-		canSend = true;
-	});
-
-	async function getData(server: string) {
-		console.log('[DEBUG] Getting info for server! ', server);
-		await orpc.getServerById.call({ id: server }).then((data) => {
-			if (!data) {
-				return;
-			}
-			serverName = data.name;
-		});
-
-		await orpc.getChannelsForServerById
-			.call({ id: server })
-			.then((data) => {
-				console.log('Got server info: ', data);
-
-				if (typeof data == 'undefined') {
-					console.warn('NO DATA! ', server);
-				}
-
-				fullData = data;
+	let serverData = createQuery<
+		unknown,
+		Error,
+		// Some typescript magic
+		(typeof category.$inferSelect & {
+			channels: (typeof channel.$inferSelect)[];
+			server: typeof server.$inferSelect;
+		})[]
+	>(
+		derived(CurrentServer, ($CurrentServer) =>
+			orpc.getChannelsForServerById.queryOptions({
+				input: {
+					id: $CurrentServer
+				},
+				staleTime: 1000 * 60 * 30 // stale after half an hour
 			})
-			.catch((err) => {
-				console.warn('FAILED TO FETCH ', err);
-			});
-	}
+		)
+	);
+
+	$inspect($serverData.data, console.warn);
 </script>
 
 <div class="flex h-full w-full flex-col">
-	<!-- Header -->
-	<div class="border-separator/20 flex h-16 items-center justify-between border-b px-4">
-		<h2 class="grow truncate text-lg font-medium">{serverName}</h2>
-		<button
-			class="hover:bg-button/50 hover:text-accent ml-2 rounded-lg p-2 transition-colors duration-200"
-			><ChevronDown /></button
-		>
-	</div>
+	{#if $serverData.isLoading}
+		<p>Loading...</p>
+	{:else if $serverData.isError}
+		<p>Something went wrong ({$serverData.error?.message ?? 'Unkown error'})</p>
+	{:else if $serverData.data && $serverData.data.length > 0}
+		<!-- Header -->
+		<div class="border-separator/20 flex h-16 items-center justify-between border-b px-4">
+			<h2 class="grow truncate text-lg font-medium">{$serverData.data[0].server.name}</h2>
+			<button
+				class="hover:bg-button/50 hover:text-accent ml-2 rounded-lg p-2 transition-colors duration-200"
+				><ChevronDown /></button
+			>
+		</div>
 
-	<!-- Channels -->
-	<ScrollArea class="h-full">
-		{#if fullData}
-			{#each fullData as c}
+		<!-- Channels -->
+		<ScrollArea class="h-full">
+			{#each $serverData.data as c}
 				<div class="mr-2 mb-5 ml-2">
 					<div class="mb-1 flex items-center px-1">
 						<button
@@ -91,11 +64,19 @@
 
 					<div class="space-y-2">
 						{#each c.channels as channel}
-							<ChannelListButton name={channel.name} />
+							<ChannelListButton
+								name={channel.name}
+								selected={$CurrentChannel == channel.id}
+								onclick={() => {
+									CurrentChannel.set(channel.id);
+								}}
+							/>
 						{/each}
 					</div>
 				</div>
 			{/each}
-		{/if}
-	</ScrollArea>
+		</ScrollArea>
+	{:else}
+		<p>No categories in this server?</p>
+	{/if}
 </div>

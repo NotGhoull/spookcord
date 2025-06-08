@@ -2,8 +2,8 @@
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import { CurrentChannel, CurrentServer } from '$lib/localStates/chat';
 	import { orpc } from '$lib/orpc';
-	import { ChevronDown, Plus } from '@lucide/svelte';
-	import { category, channel, server } from '@spookcord/db-schema';
+	import { ChevronDown, Plus, MessageCircleOff } from '@lucide/svelte';
+	import { category, channel, server, serverMembers } from '@spookcord/db-schema';
 	import { ChannelListButton } from '@spookcord/ui';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { derived } from 'svelte/store';
@@ -12,13 +12,17 @@
 		unknown,
 		Error,
 		// Some typescript magic
-		(typeof category.$inferSelect & {
-			channels: (typeof channel.$inferSelect)[];
-			server: typeof server.$inferSelect;
-		})[]
+		typeof server & {
+			members: typeof serverMembers;
+			categories: (typeof category)[] &
+				{
+					// Infered select, so we don't get weird typing issues
+					channels: (typeof channel.$inferSelect)[];
+				}[];
+		}
 	>(
 		derived(CurrentServer, ($CurrentServer) =>
-			orpc.getChannelsForServerById.queryOptions({
+			orpc.server.get.queryOptions({
 				input: {
 					id: $CurrentServer
 				},
@@ -35,10 +39,10 @@
 		<p>Loading...</p>
 	{:else if $serverData.isError}
 		<p>Something went wrong ({$serverData.error?.message ?? 'Unkown error'})</p>
-	{:else if $serverData.data && $serverData.data.length > 0}
+	{:else if $serverData.data && $serverData.data.categories.length > 0}
 		<!-- Header -->
 		<div class="border-separator/20 flex h-16 items-center justify-between border-b px-4">
-			<h2 class="grow truncate text-lg font-medium">{$serverData.data[0].server.name}</h2>
+			<h2 class="grow truncate text-lg font-medium">{$serverData.data.name}</h2>
 			<button
 				class="hover:bg-button/50 hover:text-accent ml-2 rounded-lg p-2 transition-colors duration-200"
 				><ChevronDown /></button
@@ -47,7 +51,7 @@
 
 		<!-- Channels -->
 		<ScrollArea class="h-full">
-			{#each $serverData.data as c}
+			{#each $serverData.data.categories as c (c.id)}
 				<div class="mr-2 mb-5 ml-2">
 					<div class="mb-1 flex items-center px-1">
 						<button
@@ -63,7 +67,7 @@
 					</div>
 
 					<div class="space-y-2">
-						{#each c.channels as channel}
+						{#each c.channels as channel (channel.id)}
 							<ChannelListButton
 								name={channel.name}
 								selected={$CurrentChannel == channel.id}
@@ -77,6 +81,10 @@
 			{/each}
 		</ScrollArea>
 	{:else}
-		<p>No categories in this server?</p>
+		<div class="flex h-full w-full flex-col items-center justify-center gap-2 p-2 text-center">
+			<MessageCircleOff class="h-15 w-15" />
+			<p class="text-xl font-bold">No categories here</p>
+			<p class="text-muted text-xs">This manor is most-likely corrupted or broken</p>
+		</div>
 	{/if}
 </div>

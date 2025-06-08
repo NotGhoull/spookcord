@@ -4,22 +4,39 @@ import { protectedProcedure, publicProcedure } from '../lib/orpc';
 import { and, eq } from 'drizzle-orm';
 import { generateSupabaseJWT } from '@/lib/bauthjwt';
 import { serial } from 'drizzle-orm/pg-core';
-import { category, channel, message, server, serverMembers, user } from '@spookcord/db-schema';
+import {
+	category,
+	channel,
+	message,
+	messageRelations,
+	server,
+	serverMembers,
+	user
+} from '@spookcord/db-schema';
+import { type } from '@orpc/server';
+import { type InferSelectModel } from 'drizzle-orm';
+import { serverRouter } from './server';
+import { meRouter } from './me';
+import { channelRouter } from './channel';
+import { userRouter } from './user';
 
 // THIS IS VERY UNFINISHED
 // A lot of functions here are missing authentication checks
 // Also, we should split up a lot of these to be in their own files
 
 export const appRouter = {
-	healthCheck: publicProcedure.handler(() => {
-		return 'OK';
-	}),
-	privateData: protectedProcedure.handler(({ context }) => {
-		return {
-			message: 'This is private',
-			user: context.session?.user
-		};
-	}),
+	server: serverRouter,
+	me: meRouter,
+	channel: channelRouter,
+	user: {
+		get: userRouter.get
+	},
+
+	health: {
+		check: publicProcedure.handler(() => {
+			return 'OK';
+		})
+	},
 
 	getMessages: protectedProcedure
 		.input(z.object({ channelId: z.string() }))
@@ -58,7 +75,7 @@ export const appRouter = {
 
 	getChannelById: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.handler(async ({ input, context }) => {
+		.handler(async ({ input }) => {
 			const found = await db.query.channel.findFirst({
 				where: eq(channel.id, input.id)
 			});
@@ -153,21 +170,6 @@ export const appRouter = {
 			});
 
 			return { success: true, message: '' };
-		}),
-
-	getChannelsForServerById: protectedProcedure
-		.input(z.object({ id: z.string() }))
-		.handler(async ({ input, context }) => {
-			const found = await db.query.category.findMany({
-				where: eq(category.serverId, input.id),
-				with: {
-					channels: true,
-					server: true
-				},
-				orderBy: category.position
-			});
-
-			return found;
 		}),
 
 	getServerById: protectedProcedure

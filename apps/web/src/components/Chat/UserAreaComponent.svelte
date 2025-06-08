@@ -13,7 +13,6 @@
 				console.log('User is Undefined');
 				return;
 			}
-			console.log('User is defined ', data);
 			username = data.name;
 		});
 	});

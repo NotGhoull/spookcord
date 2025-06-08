@@ -17,14 +17,14 @@
 				<!-- Background Effects -->
 				<div class="absolute inset-0 overflow-hidden rounded-3xl">
 					<div
-						class="bg-accent/10 animate-pulse-glow absolute top-12 left-12 h-32 w-32 rounded-full blur-3xl"
+						class="bg-primary/10 animate-pulse-glow absolute top-12 left-12 h-32 w-32 rounded-full blur-3xl"
 					></div>
 					<div
 						class="bg-secondary/10 animate-pulse-glow absolute right-16 bottom-16 h-24 w-24 rounded-full blur-2xl"
 						style="animation-delay: 1.5s;"
 					></div>
 					<div
-						class="bg-accent/5 animate-pulse-glow absolute top-1/2 left-1/4 h-16 w-16 rounded-full blur-xl"
+						class="bg-primary/5 animate-pulse-glow absolute top-1/2 left-1/4 h-16 w-16 rounded-full blur-xl"
 						style="animation-delay: 3s;"
 					></div>
 				</div>
@@ -35,7 +35,7 @@
 				>
 					<!-- Pattern Overlay -->
 					<div
-						class="absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_50%_50%,_var(--accent)_1px,_transparent_1px)] bg-[length:32px_32px] opacity-5"
+						class="absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_50%_50%,_var(--primary)_1px,_transparent_1px)] bg-[length:32px_32px] opacity-5"
 					></div>
 
 					<div class="relative z-10">
@@ -43,9 +43,9 @@
 						<div class="mb-8 flex justify-center">
 							<div class="relative">
 								<div
-									class="bg-accent/20 animate-pulse-glow absolute inset-0 rounded-2xl blur-lg"
+									class="bg-primary/20 animate-pulse-glow absolute inset-0 rounded-2xl blur-lg"
 								></div>
-								<div class="from-accent to-accent/80 relative rounded-2xl bg-gradient-to-br p-6">
+								<div class="from-primary to-primary/80 relative rounded-2xl bg-gradient-to-br p-6">
 									<AlertTriangle class="animate-float h-12 w-12 text-white" />
 								</div>
 							</div>
@@ -84,7 +84,7 @@
 							<div class="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
 								<button
 									onclick={reset}
-									class="group from-accent to-accent/90 hover:from-accent/90 hover:to-accent rounded-xl bg-gradient-to-r px-8 py-3 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_12px_24px_-6px_rgba(255,102,0,0.4)] active:scale-[0.98]"
+									class="group from-primary to-primary/90 hover:from-primary/90 hover:to-primary rounded-xl bg-gradient-to-r px-8 py-3 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_12px_24px_-6px_rgba(255,102,0,0.4)] active:scale-[0.98]"
 								>
 									<span class="flex items-center justify-center gap-2">
 										<RotateCcw
@@ -109,18 +109,18 @@
 							<div class="border-separator/20 border-t pt-6">
 								<div class="flex items-center justify-center gap-4 text-sm">
 									<div class="text-muted/70 flex items-center gap-2">
-										<div class="bg-accent h-2 w-2 animate-pulse rounded-full"></div>
+										<div class="bg-primary h-2 w-2 animate-pulse rounded-full"></div>
 										<span>Need help?</span>
 									</div>
 									<div class="flex gap-4">
 										<button
-											class="text-accent hover:text-accent/80 transition-all duration-200 hover:underline"
+											class="text-primary hover:text-primary/80 transition-all duration-200 hover:underline"
 										>
 											Contact Support
 										</button>
 										<span class="text-separator">•</span>
 										<button
-											class="text-accent hover:text-accent/80 transition-all duration-200 hover:underline"
+											class="text-primary hover:text-primary/80 transition-all duration-200 hover:underline"
 										>
 											Report Bug
 										</button>
@@ -133,7 +133,7 @@
 
 				<!-- Floating Elements for Visual Interest -->
 				<div
-					class="bg-accent/20 animate-float absolute -top-4 -left-4 h-8 w-8 rounded-full"
+					class="bg-primary/20 animate-float absolute -top-4 -left-4 h-8 w-8 rounded-full"
 					style="animation-delay: 0.5s;"
 				></div>
 				<div
@@ -141,7 +141,7 @@
 					style="animation-delay: 2s;"
 				></div>
 				<div
-					class="bg-accent/15 animate-float absolute top-1/3 -right-8 h-6 w-6 rounded-full"
+					class="bg-primary/15 animate-float absolute top-1/3 -right-8 h-6 w-6 rounded-full"
 					style="animation-delay: 1s;"
 				></div>
 			</div>

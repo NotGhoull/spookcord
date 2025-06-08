@@ -3,9 +3,13 @@
 	import ServerButton from './ServerButton.svelte';
 	import { orpc } from '$lib/orpc';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { serverMembers } from '@spookcord/db-schema';
+	import { serverMembers, user } from '@spookcord/db-schema';
 
-	const servers = createQuery<(typeof serverMembers)[]>(orpc.getUserServers.queryOptions());
+	const servers = createQuery<
+		typeof user & {
+			serverMemberships: (typeof serverMembers.$inferSelect)[];
+		}
+	>(orpc.me.get.queryOptions());
 </script>
 
 <div class="flex h-full w-full min-w-24 flex-col py-3">
@@ -21,9 +25,8 @@
 			{:else if $servers.isError}
 				<p>An error occurred</p>
 			{:else if $servers.data}
-				{#each $servers.data as server (server.serverId)}
-					<!-- Weird typescript hacks here -->
-					<ServerButton selfId={(server.serverId as unknown as string) ?? 'ERROR!'} />
+				{#each $servers.data.serverMemberships as server (server.serverId)}
+					<ServerButton selfId={server.serverId ?? 'ERROR!'} />
 				{/each}
 			{/if}
 			<div class="bottom-0 left-1/5">

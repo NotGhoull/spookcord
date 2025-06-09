@@ -132,6 +132,18 @@
 			});
 	});
 
+	$effect(() => {
+		// TODO: Make it so we don't scroll if the user has scrolled up by themselves
+		if ($messagesQuery.data) {
+			if (scrollAreaRef) {
+				scrollAreaRef.scrollTo({
+					top: scrollAreaRef.scrollHeight,
+					behavior: 'smooth'
+				});
+			}
+		}
+	});
+
 	onDestroy(() => {
 		supabaseService.disconnect();
 	});

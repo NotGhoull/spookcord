@@ -9,7 +9,6 @@
 		ServerCrashIcon,
 		Users
 	} from '@lucide/svelte';
-	import MessageComponent from './MessageComponent.svelte';
 	import ChatInput from './ChatInput.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { orpc } from '$lib/orpc';
@@ -18,7 +17,7 @@
 	import { CurrentChannel } from '$lib/localStates/chat';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { derived, get } from 'svelte/store';
-	import { message } from '@spookcord/db-schema';
+	import { channel, message, user } from '@spookcord/db-schema';
 	import { supabaseService } from '$lib/supabase';
 	import { toast } from 'svelte-sonner';
 	import { Message } from '@spookcord/ui';
@@ -26,24 +25,22 @@
 	const queryClient = useQueryClient();
 
 	// State management stufF
-	let scrollAreaRef: HTMLDivElement | undefined = $state(); // TODO: Make it so we scroll to the bottom on new message
+	let scrollAreaRef: HTMLElement | null = $state(null); // TODO: Make it so we scroll to the bottom on new message
+
+	type spookcordResponse = typeof channel & {
+		messages: (typeof message.$inferSelect)[] &
+			{
+				sender: {
+					name: string;
+				};
+			}[];
+	};
 
 	// Query
-	const messagesQuery = createQuery<(typeof message)[]>(
+	const messagesQuery = createQuery<spookcordResponse>(
 		derived(CurrentChannel, ($CurrentChannel) =>
-			orpc.getMessages.queryOptions({
+			orpc.channel.get.queryOptions({
 				input: { channelId: $CurrentChannel }
-			})
-		)
-	);
-
-	const currentChannelQuery = createQuery(
-		derived(CurrentChannel, ($CurrentChannel) =>
-			orpc.getChannelById.queryOptions({
-				input: {
-					id: $CurrentChannel,
-					staleTime: 300000 // 5 mins
-				}
 			})
 		)
 	);
@@ -56,21 +53,6 @@
 		})
 	);
 
-	// This code works, despite having an error
-	let realMessages: (typeof message)[] = $derived.by(() => {
-		if (!$messagesQuery.data) {
-			return [];
-		}
-		const messagesWithParsedDates = $messagesQuery.data.map((msg) => ({
-			...msg,
-			createdAt: msg.createdAt instanceof Date ? msg.createdAt : new Date()
-		}));
-
-		return [...messagesWithParsedDates].sort(
-			(a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-		);
-	});
-
 	$effect(() => {
 		if ($CurrentChannel === 'NO_CHANNEL') {
 			// Don't connect, if we're not in any channel
@@ -78,30 +60,79 @@
 		}
 
 		supabaseService.connectToMessagesChannel($CurrentChannel, (state) => {
+			// Note: This function really needs to be worked on, despite showing a load of type errors,
+			// this code still works, it's a very hacky solution and needs to be refined
+
 			switch (state.eventType) {
 				case 'INSERT':
+					// For some reason, if we try to infer select, everything breaks, and the object becomes undefined
+					const newData = state.new;
+					if (!newData) {
+						toast.error('Error while adding new message: NewData is undefined or malformed');
+						return;
+					}
+
+					const newMessageWithPlaceholderSender = {
+						...newData,
+						sender: { name: `Fetching user (${newData.sender_id})` }
+					};
+
 					// Optimistic update svelte query cache
 					queryClient.setQueryData(
-						orpc.getMessages.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-						(oldData: (typeof message)[] | undefined) => {
-							const newData = state.new;
-							// Avoid adding duplicates
-							if (oldData && !oldData.some((msg) => msg.id === newData.id)) {
-								return [...oldData, newData];
+						orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+						(oldData: spookcordResponse) => {
+							const newMessageWithSender = {
+								...newData,
+								// Placeholder, while we get the actual users name
+								sender: { name: `Fetching user (${newData.senderId})` }
+							};
+
+							if (!oldData.messages.some((msg) => msg.id === newMessageWithSender.id)) {
+								return {
+									...oldData,
+									messages: [...oldData.messages, newMessageWithSender]
+								};
 							}
-							return oldData || [newData];
 						}
 					);
+
+					// We have to use sender_id here, otherwise, it breaks
+					orpc.user.get.call({ userId: newData.sender_id }).then((response: typeof user) => {
+						console.log('[MESSAGE UPDATE] Got user data!', response);
+						const actualSenderName = response.name;
+
+						queryClient.setQueryData(
+							orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+							(currentChannelData: spookcordResponse | undefined) => {
+								if (!currentChannelData) return currentChannelData; // No data to update
+
+								const updatedMessages = currentChannelData.messages.map((msg) =>
+									msg.id === newMessageWithPlaceholderSender.id
+										? { ...msg, sender: { name: actualSenderName } } // Update the specific message
+										: msg
+								);
+
+								return {
+									...currentChannelData,
+									messages: updatedMessages
+								};
+							}
+						);
+					});
 					break;
 
 				case 'UPDATE':
 					queryClient.setQueryData(
-						orpc.getMessages.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-						(oldData: (typeof message)[] | undefined) => {
+						orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+						(oldData: spookcordResponse | undefined) => {
 							if (oldData) {
-								return oldData.map((message) =>
+								const newMessages = oldData.messages.map((message) =>
 									message.id === state.old.id ? { ...message, ...state.new } : message
 								);
+								return {
+									...oldData,
+									messages: newMessages
+								};
 							}
 						}
 					);
@@ -109,12 +140,20 @@
 
 				case 'DELETE':
 					queryClient.setQueryData(
-						orpc.getMessages.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-						(oldData: (typeof message)[] | undefined) => {
-							if (oldData) {
-								return oldData.filter((message) => message.id !== state.old.id);
+						orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
+						(oldData: spookcordResponse) => {
+							if (!oldData || !oldData.messages) {
+								return oldData;
 							}
-							return oldData;
+
+							const updatedMessages = oldData.messages.filter(
+								(message) => message.id !== state.old.id
+							);
+
+							return {
+								...oldData,
+								messages: updatedMessages
+							};
 						}
 					);
 			}
@@ -156,7 +195,7 @@
 				<Hash class="text-accent h-5 w-5" />
 			</div>
 			<h2 class="text-accent text-lg font-medium">
-				{$currentChannelQuery.data?.name ?? 'Loading'}
+				{$messagesQuery.data?.name ?? 'Loading'}
 			</h2>
 		</div>
 		<div class="flex items-center gap-2">
@@ -171,7 +210,7 @@
 		</div>
 	</div>
 
-	<ScrollArea class="grow px-4 py-4 pt-0" ref={scrollAreaRef}>
+	<ScrollArea class="grow px-4 py-4 pt-0" bind:viewPortRef={scrollAreaRef}>
 		{#if $CurrentChannel === 'NO_CHANNEL'}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
 				<MessageCircleQuestionIcon class="size-20" />
@@ -196,7 +235,7 @@
 				<p>There was an issue fetching messages. Please try again.</p>
 				<p>Error: {$messagesQuery.error.message}</p>
 			</div>
-		{:else if realMessages.length === 0}
+		{:else if $messagesQuery.data.messages.length === 0}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
 				<MessageCircleDashedIcon class="size-20" />
 				<h1 class="text-3xl font-bold">No messages yet</h1>
@@ -204,17 +243,12 @@
 			</div>
 		{:else}
 			<div class="space-y-6">
-				{#each realMessages as message (message.id)}
+				{#each $messagesQuery.data.messages as message (message.id)}
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
-						<!-- <MessageComponent
-							senderId={message.senderId as unknown as string}
-							createdAt={message.createdAt as unknown as Date}
-							text={message.body as unknown as string}
-						/> -->
 						<Message
-							text={message.body as unknown as string}
-							username={message.senderId as unknown as string}
-							createdAt={message.createdAt as unknown as Date}
+							text={message.body}
+							username={message.sender.name}
+							createdAt={message.createdAt ?? new Date()}
 						/>
 					</div>
 				{/each}

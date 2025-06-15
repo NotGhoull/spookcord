@@ -10,6 +10,8 @@
 	import UserSettingsLayout from '../../components/User-Settings/UserSettingsLayout.svelte';
 	import { CurrentServer } from '$lib/localStates/chat';
 
+	import * as Dialog from '$lib/components/ui/dialog';
+
 	let isMobile: boolean = $state(false);
 	let activeView: 'servers' | 'channels' | 'chat' | 'members' | 'home' = $state('chat');
 	let showSettings: boolean = $state(true);
@@ -39,7 +41,7 @@
 	class="bg-background text-foreground relative flex h-screen w-full overflow-hidden p-4"
 	id="SPOOKCORD_PORTAL_BASE"
 >
-	<div class="relative z-10 flex h-full w-full gap-4">
+	<div class="relative flex h-full w-full gap-4">
 		{#if !isMobile || activeView == 'servers'}
 			<div
 				class="border-separator/20 bg-sidebar/80 h-full overflow-hidden rounded-2xl border backdrop-blur-md transition-all duration-500 ease-out"

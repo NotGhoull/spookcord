@@ -7,5 +7,17 @@ export default defineConfig({
 	dialect: 'postgresql',
 	dbCredentials: {
 		url: process.env.DATABASE_URL || ''
-	}
+	},
+	entities: {
+		roles: {
+			provider: 'supabase'
+		}
+	},
+	migrations: {
+		prefix: 'supabase',
+		table: 'journal',
+		schema: 'drizzle'
+	},
+	verbose: true,
+	strict: true
 });

@@ -21,6 +21,7 @@
 	import { supabaseService } from '$lib/supabase';
 	import { toast } from 'svelte-sonner';
 	import { Message } from '@spookcord/ui';
+	import { authClient } from '$lib/auth-client';
 
 	const queryClient = useQueryClient();
 
@@ -125,6 +126,7 @@
 					queryClient.setQueryData(
 						orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
 						(oldData: spookcordResponse | undefined) => {
+							console.log('GOT UPDATE!');
 							if (oldData) {
 								const newMessages = oldData.messages.map((message) =>
 									message.id === state.old.id ? { ...message, ...state.new } : message
@@ -160,6 +162,8 @@
 		});
 	});
 
+	function handleMessageEdit(message: string, messageId: string) {}
+
 	onMount(async () => {
 		await $JWTQuery.promise
 			.then((data) => {
@@ -192,9 +196,9 @@
 	<div class="border-separator/20 flex h-16 items-center justify-between border-b p-3">
 		<div class="flex items-center gap-2">
 			<div class="bg-button/50 flex h-8 w-8 items-center justify-center rounded-lg">
-				<Hash class="text-accent h-5 w-5" />
+				<Hash class="text-primary h-5 w-5" />
 			</div>
-			<h2 class="text-accent text-lg font-medium">
+			<h2 class="text-primary text-lg font-medium">
 				{$messagesQuery.data?.name ?? 'Loading'}
 			</h2>
 		</div>
@@ -247,8 +251,12 @@
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
 						<Message
 							text={message.body}
+							isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
 							username={message.sender.name}
 							createdAt={message.createdAt ?? new Date()}
+							edited={message.createdAt.getDate() != message.updatedAt.getDate()}
+							lastEdited={message.updatedAt}
+							onTextEdited={(data) => handleMessageEdit(data, message.id)}
 						/>
 					</div>
 				{/each}

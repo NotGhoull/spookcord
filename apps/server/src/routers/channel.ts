@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { protectedProcedure } from '@/lib/orpc';
+import { os } from '@orpc/server';
 import { channel, message } from '@spookcord/db-schema';
 import { eq } from 'drizzle-orm';
 import z from 'zod';
@@ -33,5 +34,31 @@ export const channelRouter = {
 			return db.query.message.findMany({
 				where: eq(message.channelId, input.channelId)
 			});
+		}),
+
+	updateMessage: os
+		.input(z.object({ newText: z.string(), messageId: z.string() }))
+		.handler(async ({ input }) => {
+			db.update(message)
+				.set({ body: input.newText })
+				.where(eq(message.id, input.messageId))
+				.catch((e) => {
+					console.error(
+						'DATABASE ERROR!\n\t- An error occurred while a user was trying to update a message: ',
+						e
+					);
+					return {
+						success: false,
+						// I'll turn this into a type, eventually
+						error: {
+							code: 'Server/Messaging:DATABASE_ERROR',
+							message: 'Failed to update message due to an internal error.',
+							timestamp: new Date().getTime()
+						}
+					};
+				});
+			return {
+				success: true
+			};
 		})
 };

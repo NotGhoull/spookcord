@@ -21,6 +21,9 @@
 			createdAt: {
 				control: 'date',
 				description: 'The date the message was created at'
+			},
+			lastEdited: {
+				control: 'date'
 			}
 		}
 	});

@@ -248,16 +248,29 @@
 		{:else}
 			<div class="space-y-6">
 				{#each $messagesQuery.data.messages as message (message.id)}
+					<!-- Sometimes, createdAt() ends up being undefined, this normally happens when a new message is made though, so we can assume its new -->
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
-						<Message
-							text={message.body}
-							isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
-							username={message.sender.name}
-							createdAt={message.createdAt ?? new Date()}
-							edited={message.createdAt.getDate() != message.updatedAt.getDate()}
-							lastEdited={message.updatedAt}
-							onTextEdited={(data) => handleMessageEdit(data, message.id)}
-						/>
+						{#if message.createdAt}
+							<Message
+								text={message.body}
+								isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
+								username={message.sender.name}
+								createdAt={message.createdAt}
+								edited={message.createdAt.getDate() != message.updatedAt.getDate()}
+								lastEdited={message.updatedAt}
+								onTextEdited={(data) => handleMessageEdit(data, message.id)}
+							/>
+						{:else}
+							<Message
+								text={message.body}
+								isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
+								username={message.sender.name}
+								createdAt={new Date()}
+								edited={false}
+								lastEdited={message.updatedAt}
+								onTextEdited={(data) => handleMessageEdit(data, message.id)}
+							/>
+						{/if}
 					</div>
 				{/each}
 			</div>

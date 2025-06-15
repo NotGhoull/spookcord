@@ -36,13 +36,13 @@
 		"@orpc/client": "^1.2.0",
 		"@orpc/server": "^1.2.0",
 		"@orpc/svelte-query": "^1.2.0",
+		"@spookcord/db-schema": "workspace:*",
 		"@supabase/supabase-js": "^2.49.4",
 		"@tanstack/svelte-form": "^1.11.1",
 		"@tanstack/svelte-query": "^5.76.0",
 		"better-auth": "^1.2.8",
 		"mode-watcher": "^1.0.7",
-		"zod": "^3.24.4",
-		"@spookcord/db-schema": "workspace:*"
+		"zod": "^3.25.56"
 	},
 	"packageManager": "bun@1.2.13"
 }

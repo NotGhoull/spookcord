@@ -58,8 +58,8 @@ export class SupabaseService {
 		channelId: string,
 		onMessageUpdate: (payload: {
 			eventType: 'INSERT' | 'UPDATE' | 'DELETE';
-			new: typeof message;
-			old: Partial<typeof message>;
+			new: typeof message.$inferSelect;
+			old: Partial<typeof message.$inferSelect>;
 		}) => void
 	): void {
 		if (!this.client) {
@@ -90,11 +90,19 @@ export class SupabaseService {
 					filter: `channel_id=eq.${channelId}`
 				},
 				(payload) => {
-					console.debug('[SupabaseService (Debug)] Got realtime update ', payload);
+					const newPayloadData = snakeToCamel(payload.new);
+					const oldPayloadData = snakeToCamel(payload.old);
+
+					console.debug(
+						'[SupabaseService (Debug)] Got realtime update ',
+						payload,
+						newPayloadData,
+						oldPayloadData
+					);
 					onMessageUpdate({
 						eventType: payload.eventType,
-						new: payload.new as typeof message,
-						old: payload.old as Partial<typeof message>
+						new: newPayloadData as typeof message.$inferSelect,
+						old: oldPayloadData as Partial<typeof message.$inferSelect>
 					});
 				}
 			)
@@ -155,3 +163,22 @@ export class SupabaseService {
 }
 
 export const supabaseService = SupabaseService.getInstance();
+
+export function snakeToCamel(obj: any): any {
+	if (typeof obj !== 'object' || obj === null) {
+		return obj;
+	}
+
+	if (Array.isArray(obj)) {
+		return obj.map((element) => snakeToCamel(element));
+	}
+
+	const newObj: { [key: string]: any } = {};
+	for (const key in obj) {
+		if (Object.prototype.hasOwnProperty.call(obj, key)) {
+			const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+			newObj[camelKey] = snakeToCamel(obj[key]);
+		}
+	}
+	return newObj;
+}

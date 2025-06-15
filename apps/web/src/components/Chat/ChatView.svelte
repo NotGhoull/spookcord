@@ -64,6 +64,7 @@
 			// Note: This function really needs to be worked on, despite showing a load of type errors,
 			// this code still works, it's a very hacky solution and needs to be refined
 
+			// Fix: Why the fuck does state.old use underscores now, instead of the actual naming, despite being the same type?
 			switch (state.eventType) {
 				case 'INSERT':
 					// For some reason, if we try to infer select, everything breaks, and the object becomes undefined
@@ -73,9 +74,14 @@
 						return;
 					}
 
+					console.log('[Insanity/Debug] The type of the date is string');
+
+					newData.createdAt = new Date(newData.createdAt);
+					newData.updatedAt = new Date(newData.updatedAt);
+
 					const newMessageWithPlaceholderSender = {
 						...newData,
-						sender: { name: `Fetching user (${newData.sender_id})` }
+						sender: { name: `Fetching user (${newData.senderId})` }
 					};
 
 					// Optimistic update svelte query cache
@@ -98,7 +104,7 @@
 					);
 
 					// We have to use sender_id here, otherwise, it breaks
-					orpc.user.get.call({ userId: newData.sender_id }).then((response: typeof user) => {
+					orpc.user.get.call({ userId: newData.senderId }).then((response: typeof user) => {
 						console.log('[MESSAGE UPDATE] Got user data!', response);
 						const actualSenderName = response.name;
 
@@ -250,27 +256,15 @@
 				{#each $messagesQuery.data.messages as message (message.id)}
 					<!-- Sometimes, createdAt() ends up being undefined, this normally happens when a new message is made though, so we can assume its new -->
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
-						{#if message.createdAt}
-							<Message
-								text={message.body}
-								isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
-								username={message.sender.name}
-								createdAt={message.createdAt}
-								edited={message.createdAt.getDate() != message.updatedAt.getDate()}
-								lastEdited={message.updatedAt}
-								onTextEdited={(data) => handleMessageEdit(data, message.id)}
-							/>
-						{:else}
-							<Message
-								text={message.body}
-								isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
-								username={message.sender.name}
-								createdAt={new Date()}
-								edited={false}
-								lastEdited={message.updatedAt}
-								onTextEdited={(data) => handleMessageEdit(data, message.id)}
-							/>
-						{/if}
+						<Message
+							text={message.body}
+							isSelf={message.senderId == authClient.useSession().get().data?.session.userId}
+							username={message.sender.name}
+							createdAt={message.createdAt}
+							edited={message.createdAt.getTime() != message.updatedAt.getTime()}
+							lastEdited={message.updatedAt}
+							onTextEdited={(data) => handleMessageEdit(data, message.id)}
+						/>
 					</div>
 				{/each}
 			</div>

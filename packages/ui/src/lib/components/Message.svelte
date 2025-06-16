@@ -112,8 +112,10 @@
 	class="group hover:bg-chat-area/80 relative flex gap-4 rounded-xl px-2 py-2 transition-all duration-200"
 >
 	{#if isSelf}
+		<!-- Added additional style tag, since for whatever reason right doesn't always get applied  -->
 		<div
 			class="absolute -top-3.5 right-0 mr-4 flex w-fit flex-row gap-1 rounded-md bg-black/50 p-1 opacity-0 transition-all duration-500 group-hover:opacity-100"
+			style="right: 0"
 		>
 			<Button variant="ghost" size="sm" class="h-8 w-8" onclick={() => (isEditing = true)}>
 				<PenLine />

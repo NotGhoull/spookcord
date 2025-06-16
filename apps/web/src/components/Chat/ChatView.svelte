@@ -134,9 +134,14 @@
 						(oldData: spookcordResponse | undefined) => {
 							console.log('GOT UPDATE!');
 							if (oldData) {
+								state.new.createdAt = new Date(state.new.createdAt);
+								state.new.updatedAt = new Date(state.new.updatedAt);
+
 								const newMessages = oldData.messages.map((message) =>
 									message.id === state.old.id ? { ...message, ...state.new } : message
 								);
+
+								console.debug('newMessages VALUE', newMessages);
 								return {
 									...oldData,
 									messages: newMessages
@@ -168,7 +173,13 @@
 		});
 	});
 
-	function handleMessageEdit(message: string, messageId: string) {}
+	function handleMessageEdit(message: string, messageId: string) {
+		orpc.channel.updateMessage.call({ messageId: messageId, newText: message }).then((data) => {
+			if (!data.success) {
+				toast.error(`Failed to edit message ${data.message ?? 'Unknown error'}`);
+			}
+		});
+	}
 
 	onMount(async () => {
 		await $JWTQuery.promise

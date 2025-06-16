@@ -1,32 +1,12 @@
 <script>
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { cn } from '$lib/utils';
-	import {
-		Accessibility,
-		ArrowRight,
-		Bell,
-		ChevronLeftIcon,
-		ChevronRightIcon,
-		CompassIcon,
-		Database,
-		Hash,
-		Keyboard,
-		LogOutIcon,
-		Palette,
-		Plus,
-		PlusCircleIcon,
-		Shield,
-		User,
-		UsersRound,
-		XIcon
-	} from '@lucide/svelte';
-	import UserProfileSettings from '../User-Settings/UserProfileSettings.svelte';
+	import { ArrowRight, Hash, Plus, UsersRound, XIcon } from '@lucide/svelte';
 	import { Dialog } from 'bits-ui';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { toast } from 'svelte-sonner';
 	import { orpc } from '$lib/orpc';
 	import { goto } from '$app/navigation';
+
+	let targetServerCode = $state('');
 
 	let { open = $bindable() } = $props();
 </script>
@@ -184,6 +164,7 @@
 							<div class="space-y-4">
 								<div class="relative">
 									<Input
+										bind:value={targetServerCode}
 										placeholder="Enter invite code or link..."
 										class="bg-input-bg/50 border-separator/50 focus:border-accent/50 text-foreground placeholder:text-muted/60 focus:bg-input-bg w-full rounded-xl px-4 py-3 transition-all duration-300 focus:shadow-[0_0_20px_rgba(255,102,0,0.1)]"
 									/>
@@ -192,13 +173,18 @@
 								<button
 									class="from-accent to-accent/90 hover:from-accent/90 hover:to-accent w-full rounded-xl bg-gradient-to-r px-6 py-3 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_12px_24px_-6px_rgba(255,102,0,0.4)] active:scale-[0.98]"
 									onclick={async () => {
+										// TODO: Improve this
 										console.log('Join server clicked');
 
-										await orpc.joinServer.call({ server: 'a' }).then((data) => {
+										await orpc.joinServer.call({ server: targetServerCode }).then((data) => {
 											if (!data.success) {
 												toast.error(`Failed to join: ${data.message}`);
 											} else {
-												toast.success('OK');
+												// Here, we should be invalidating the current serverList from ServerList.svelte
+												//  We would probably achieve this using a store or context, depending on how the UI package goes
+												toast.success(
+													'Done! You may need to reload for the server to show up on the side'
+												);
 												goto('/chat');
 											}
 										});

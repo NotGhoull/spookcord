@@ -1,0 +1,20 @@
+{
+	"name": "@spookcord/types",
+	"module": "./src/index.ts",
+	"version": "1.0.0",
+	"private": true,
+	"main": "./src/index.ts",
+	"type": "module",
+	"scripts": {
+		"build": "bunx tsc && bunx tsc-alias"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"zod": "^3.25.67"
+	}
+}

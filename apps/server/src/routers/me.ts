@@ -14,6 +14,7 @@ export const meRouter = {
 			}
 		});
 		if (!found) {
+			// TODO: Change this to a spookcordError once I create it
 			throw new ORPCError('Sorry, something went wrong');
 		}
 		return found;

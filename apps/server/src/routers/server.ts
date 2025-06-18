@@ -8,6 +8,7 @@ import { os } from '@orpc/server';
 import { category, channel, server, serverMembers } from '@spookcord/db-schema';
 import { and, eq } from 'drizzle-orm';
 import z from 'zod/v4';
+import { randomInt } from 'crypto';
 
 export const serverRouter = {
 	create: os
@@ -19,7 +20,6 @@ export const serverRouter = {
 				const inviteCode = createInviteCode();
 
 				// Create the server
-				console.log('bingus my beloved');
 				const newServer = await tx
 					.insert(server)
 					.values({
@@ -56,11 +56,9 @@ export const serverRouter = {
 					})
 					.returning();
 
-				console.log('[Debug] Channel made');
-
-				console.log('Created server! ', createdServer);
 				return createdServer;
 			});
+			return result;
 		}),
 
 	join: os
@@ -131,12 +129,12 @@ export const serverRouter = {
  * @returns The code
  */
 function createInviteCode(): string {
-	let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	let result = '';
 
 	const characterLength = characters.length;
 	for (let i = 0; i < 8; i++) {
-		result += characters.charAt(Math.floor(Math.random() * characterLength));
+		result += characters.charAt(randomInt(0, characterLength));
 	}
 
 	return result;

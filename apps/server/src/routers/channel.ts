@@ -67,17 +67,25 @@ export const channelRouter = {
 		.$context<Context>()
 		.use(requireAuth)
 		.input(z.object({ body: z.string(), channelId: z.string() }))
-		.handler(({ input, context }) => {
-			db.insert(message)
+		.handler(async ({ input, context }) => {
+			const [inserted] = await db
+				.insert(message)
 				.values({
 					channelId: input.channelId,
 					senderId: context.session.user.id,
 					body: input.body
 				})
-				.returning()
-				.then((resp) => {
-					console.log('Updated databsae');
-					console.log(resp);
-				});
+				.returning();
+
+			if (!inserted) {
+				// TODO: I'll make a proper error type probably in the next PR (feat/error-types)
+				//       And we'll use that for standardization of errors in general
+				return {
+					success: false,
+					message: 'Database error'
+				};
+			}
+
+			return { success: true };
 		})
 };

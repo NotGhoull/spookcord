@@ -127,8 +127,9 @@ export const serverRouter = {
 
 // This could probably go somewhere else, but idk where
 /**
- * Generates an 8 character long code
- * @returns The code
+ * Generates a random 8-character invite code using uppercase and lowercase English letters.
+ *
+ * @returns An 8-character string suitable for use as an invite code.
  */
 function createInviteCode(): string {
 	let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

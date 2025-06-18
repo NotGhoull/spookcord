@@ -19,6 +19,7 @@ const envSchema = z.object({
 	DATABASE_URL: z.url({ protocol: /^postgresql$/ }),
 	SUPABASE_JWT_SECRET: z.string().min(15, 'Please make sure your JWT_SECRET is secure.'),
 	PORT: z.number('Port must be a number').optional().default(3000)
+	// COMPRESSION_TYPE: z.enum(["AVIF", "WEBP"], "Compression type should be either 'AVIF' or 'WEBP'\nWhat each one does\n AVIF - Offers superior compression and quality for photographic content, often resulting in smaller file sizes than WebP at comparable quality.\n WEBP - Provides excellent all-around compression with wide browser support, balancing good quality with reduced file sizes for various image types.")
 });
 
 const result = envSchema.safeParse({

@@ -176,7 +176,7 @@
 										// TODO: Improve this
 										console.log('Join server clicked');
 
-										await orpc.joinServer.call({ server: targetServerCode }).then((data) => {
+										await orpc.server.join.call({ server: targetServerCode }).then((data) => {
 											if (!data.success) {
 												toast.error(`Failed to join: ${data.message}`);
 											} else {

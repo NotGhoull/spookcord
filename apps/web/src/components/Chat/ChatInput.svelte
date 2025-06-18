@@ -34,7 +34,7 @@
 		console.warn('TODO: Use readable localstorage value (CURRENT_CHANNEL) for this value');
 
 		try {
-			await orpc.sendMessage.call({
+			await orpc.channel.sendMessage.call({
 				body: value,
 				channelId: $CurrentChannel
 			});

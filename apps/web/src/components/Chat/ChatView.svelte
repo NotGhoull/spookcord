@@ -47,7 +47,7 @@
 	);
 
 	const JWTQuery = createQuery<string>(
-		orpc.getJWT.queryOptions({
+		orpc.auth.getJWT.queryOptions({
 			refetchInterval: 3000000, // 50 minutes
 			staleTime: 2400000, // Stale after 40 mins
 			experimental_prefetchInRender: true

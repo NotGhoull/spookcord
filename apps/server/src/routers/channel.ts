@@ -1,5 +1,6 @@
 import { db } from '@/db';
-import { protectedProcedure } from '@/lib/orpc';
+import type { Context } from '@/lib/context';
+import { protectedProcedure, requireAuth } from '@/lib/orpc';
 import { os } from '@orpc/server';
 import { channel, message } from '@spookcord/db-schema';
 import { eq } from 'drizzle-orm';
@@ -60,5 +61,31 @@ export const channelRouter = {
 			return {
 				success: true
 			};
+		}),
+
+	sendMessage: os
+		.$context<Context>()
+		.use(requireAuth)
+		.input(z.object({ body: z.string(), channelId: z.string() }))
+		.handler(async ({ input, context }) => {
+			const [inserted] = await db
+				.insert(message)
+				.values({
+					channelId: input.channelId,
+					senderId: context.session.user.id,
+					body: input.body
+				})
+				.returning();
+
+			if (!inserted) {
+				// TODO: I'll make a proper error type probably in the next PR (feat/error-types)
+				//       And we'll use that for standardization of errors in general
+				return {
+					success: false,
+					message: 'Database error'
+				};
+			}
+
+			return { success: true };
 		})
 };

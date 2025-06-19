@@ -1,9 +1,18 @@
 {
 	"name": "@spookcord/types",
-	"module": "./src/index.ts",
 	"version": "1.0.0",
 	"private": true,
 	"main": "./src/index.ts",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts"
+		},
+		"./api/*": {
+			"types": "./dist/api/*.d.ts",
+			"import": "./dist/api/*.js"
+		}
+	},
 	"type": "module",
 	"scripts": {
 		"build": "bunx tsc && bunx tsc-alias"
@@ -15,6 +24,7 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"zod": "^3.25.67"
+		"zod": "^3.25.67",
+		"@spookcord/db-schema": "workspace:*"
 	}
 }

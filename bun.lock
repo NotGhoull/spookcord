@@ -91,6 +91,7 @@
       "name": "@spookcord/types",
       "version": "1.0.0",
       "dependencies": {
+        "@spookcord/db-schema": "workspace:*",
         "zod": "^3.25.67",
       },
       "devDependencies": {

@@ -38,7 +38,7 @@
 	};
 
 	// Query
-	const messagesQuery = createQuery<spookcordResponse>(
+	const messagesQuery = createQuery(
 		derived(CurrentChannel, ($CurrentChannel) =>
 			orpc.channel.get.queryOptions({
 				input: { channelId: $CurrentChannel }
@@ -176,7 +176,7 @@
 	function handleMessageEdit(message: string, messageId: string) {
 		orpc.channel.updateMessage.call({ messageId: messageId, newText: message }).then((data) => {
 			if (!data.success) {
-				toast.error(`Failed to edit message ${data.message ?? 'Unknown error'}`);
+				toast.error(`Failed to edit message ${data.response.message ?? 'Unknown error'}`);
 			}
 		});
 	}
@@ -216,7 +216,8 @@
 				<Hash class="text-primary h-5 w-5" />
 			</div>
 			<h2 class="text-primary text-lg font-medium">
-				{$messagesQuery.data?.name ?? 'Loading'}
+				<!-- TODO: Add better error handling here -->
+				{$messagesQuery.data?.response?.name ?? 'Loading'}
 			</h2>
 		</div>
 		<div class="flex items-center gap-2">
@@ -256,7 +257,12 @@
 				<p>There was an issue fetching messages. Please try again.</p>
 				<p>Error: {$messagesQuery.error.message}</p>
 			</div>
-		{:else if $messagesQuery.data.messages.length === 0}
+		{:else if !$messagesQuery.data?.success}
+			<div>
+				<p>This is where the error message would go</p>
+				<p>{$messagesQuery.data!.error!.message} ({$messagesQuery.data!.error!.code})</p>
+			</div>
+		{:else if $messagesQuery.data?.response?.messages.length === 0}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
 				<MessageCircleDashedIcon class="size-20" />
 				<h1 class="text-3xl font-bold">No messages yet</h1>
@@ -264,7 +270,7 @@
 			</div>
 		{:else}
 			<div class="space-y-6">
-				{#each $messagesQuery.data.messages as message (message.id)}
+				{#each $messagesQuery.data!.response!.messages as message (message.id)}
 					<!-- Sometimes, createdAt() ends up being undefined, this normally happens when a new message is made though, so we can assume its new -->
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
 						<Message

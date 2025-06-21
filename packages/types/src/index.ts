@@ -12,7 +12,8 @@ const ErrorFeatureZod = z.union([
 	z.literal('Messaging'),
 	z.literal('User'),
 	z.literal('Validation'),
-	z.literal('Manor')
+	z.literal('Manor'),
+	z.literal('Internal')
 ]);
 
 const ErrorTypeZod = z.union([

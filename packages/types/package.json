@@ -6,11 +6,16 @@
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts"
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
 		},
 		"./api/*": {
 			"types": "./dist/api/*.d.ts",
 			"import": "./dist/api/*.js"
+		},
+		"./serializers/*": {
+			"types": "./dist/serializers/*.d.ts",
+			"import": "./dist/serializers/*.js"
 		}
 	},
 	"type": "module",
@@ -21,7 +26,8 @@
 		"@types/bun": "latest"
 	},
 	"peerDependencies": {
-		"typescript": "^5"
+		"typescript": "^5",
+		"@orpc/client": "^1.2.0"
 	},
 	"dependencies": {
 		"zod": "^3.25.67",

@@ -9,70 +9,120 @@ import { category, channel, server, serverMembers } from '@spookcord/db-schema';
 import { and, eq } from 'drizzle-orm';
 import z from 'zod/v4';
 import { randomInt } from 'crypto';
+import {
+	SERVER_CREATE_INPUT,
+	SERVER_CREATE_OUTPUT,
+	SERVER_JOIN_INPUT,
+	SERVER_JOIN_OUTPUT
+} from '@spookcord/types/api/server';
 
 export const serverRouter = {
 	create: os
 		.$context<Context>()
-		.input(z.object({ serverName: z.string() }))
+		.input(SERVER_CREATE_INPUT)
+		.output(SERVER_CREATE_OUTPUT)
 		.use(requireAuth)
 		.handler(async ({ input, context }) => {
-			const result = await db.transaction(async (tx) => {
-				const inviteCode = createInviteCode();
+			const result = await db
+				.transaction(async (tx) => {
+					const inviteCode = createInviteCode();
 
-				// Create the server
-				const newServer = await tx
-					.insert(server)
-					.values({
-						name: input.serverName,
-						ownerId: context.session.user.id,
-						inviteCode: inviteCode
-					})
-					.returning();
+					// Create the server
+					const newServer = await tx
+						.insert(server)
+						.values({
+							name: input.serverName,
+							ownerId: context.session.user.id,
+							inviteCode: inviteCode
+						})
+						.returning();
 
-				const createdServer = newServer[0];
+					const createdServer = newServer[0];
 
-				// Make the owner a member of the server
-				await tx.insert(serverMembers).values({
-					serverId: createdServer.id,
-					userId: context.session.user.id
-				});
+					// Make the owner a member of the server
+					await tx.insert(serverMembers).values({
+						serverId: createdServer.id,
+						userId: context.session.user.id
+					});
 
-				// Create default category
-				const defaultCategory = await tx
-					.insert(category)
-					.values({
-						name: 'Default',
-						position: 0,
-						serverId: createdServer.id
-					})
-					.returning();
+					// Create default category
+					const defaultCategory = await tx
+						.insert(category)
+						.values({
+							name: 'Default',
+							position: 0,
+							serverId: createdServer.id
+						})
+						.returning();
 
-				const defaultChannel = await tx
-					.insert(channel)
-					.values({
+					await tx.insert(channel).values({
 						name: 'General',
 						categoryId: defaultCategory[0].id,
 						type: 'text'
-					})
-					.returning();
+					});
 
-				return createdServer;
-			});
-			return result;
+					return createdServer;
+				})
+				.catch((e) => {
+					let errorID = crypto.randomUUID();
+					console.error(
+						`[api:server/error (${errorID})] An error occurred during manor creation: `,
+						e
+					);
+					return {
+						success: false,
+						error: {
+							code: 'Backend:Manor/INTERNAL_ERROR',
+							message: "The manor couldn't be created due to an internal error",
+							details: {
+								logId: errorID
+							}
+						}
+					};
+				});
+
+			let parsed = SERVER_CREATE_OUTPUT.safeParse({ success: true, response: { ...result } });
+			if (!parsed.success) {
+				let errorID = crypto.randomUUID();
+				console.error(
+					`[api:server/error (${errorID})] An error occurred while parsing a manor: `,
+					parsed.error,
+					result
+				);
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/INVALID_DATA',
+						message: 'The manor was created, but its data is malformed.',
+						details: {
+							logId: errorID
+						}
+					}
+				};
+			}
+			return parsed.data;
 		}),
 
 	join: os
 		.$context<Context>()
 		.use(requireAuth)
-		.input(z.object({ server: z.string() }))
-		.output(z.object({ success: z.boolean(), message: z.string() }))
+		.input(SERVER_JOIN_INPUT)
+		.output(SERVER_JOIN_OUTPUT)
 		.handler(async ({ input, context }) => {
 			const foundServer = await db.query.server.findFirst({
 				where: eq(server.inviteCode, input.server)
 			});
 
 			if (!foundServer) {
-				return { success: false, message: 'No such invite found' };
+				// We don't include logging for this, since it could get
+				// out of hand with people just spam trying invites
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/NOT_FOUND',
+						message: 'No such invite found.'
+					}
+				};
 			}
 
 			const existingMembership = await db.query.serverMembers.findFirst({
@@ -83,7 +133,15 @@ export const serverRouter = {
 			});
 
 			if (existingMembership) {
-				return { success: false, message: 'You are already in this server' };
+				// Once again, no logging on this error
+				// Maybe we could add a flag or something "LOG_VERBOSE_ERRORS"
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/CONFLICT',
+						message: 'You are already in this server'
+					}
+				};
 			}
 
 			await db.insert(serverMembers).values({
@@ -91,7 +149,18 @@ export const serverRouter = {
 				userId: context.session.user.id
 			});
 
-			return { success: true, message: '' };
+			let parsed = SERVER_JOIN_OUTPUT.safeParse({ success: true, response: { ...foundServer } });
+			if (!parsed.success) {
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/INVALID_DATA',
+						message: "The returned manor's data was malformed"
+					}
+				};
+			}
+
+			return parsed.data;
 		}),
 
 	get: os

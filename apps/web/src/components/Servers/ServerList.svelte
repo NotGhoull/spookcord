@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import ServerButton from './ServerButton.svelte';
-	import { orpc } from '$lib/orpc';
+	import { orpc, queryClient } from '$lib/orpc';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { serverMembers, user } from '@spookcord/db-schema';
+	import { onDestroy } from 'svelte';
+	import { subscribe } from '$lib/eventbus';
 
 	const servers = createQuery(orpc.me.get.queryOptions());
+	const unsubscribe = subscribe('updateManorList', (_) => {
+		// TODO: Eventually, we'd want to optimistically update, but this works for now
+		//       we'd probably want to make it into a realtime table though, so we can handle kicks and stuff properly
+		queryClient.refetchQueries({
+			queryKey: orpc.me.get.queryOptions().queryKey
+		});
+		console.log('Refetch called!');
+	});
+
+	onDestroy(() => {
+		unsubscribe();
+	});
 </script>
 
 <div class="flex h-full w-full min-w-24 flex-col py-3">

@@ -5,6 +5,7 @@
 	import { toast } from 'svelte-sonner';
 	import { orpc } from '$lib/orpc';
 	import { goto } from '$app/navigation';
+	import { emit, eventBus } from '$lib/eventbus';
 
 	let targetServerCode = $state('');
 
@@ -178,18 +179,17 @@
 
 										await orpc.server.join.call({ server: targetServerCode }).then((data) => {
 											if (!data.success) {
-												toast.error(`Failed to join: ${data.message}`);
-											} else {
-												// Here, we should be invalidating the current serverList from ServerList.svelte
-												//  We would probably achieve this using a store or context, depending on how the UI package goes
-												toast.success(
-													'Done! You may need to reload for the server to show up on the side'
+												toast.error(
+													`${data.error?.message ?? 'Failed to join, because something went wrong'}`
 												);
-												goto('/chat');
+												console.error('Failed to join server', data.error);
+												return;
 											}
-										});
 
-										// toast.warning("Cannot join: ORPC didn't respond");
+											emit('updateManorList', null);
+											toast.success('Joined server!');
+											open = false;
+										});
 									}}
 								>
 									<span class="flex items-center justify-center gap-2">

@@ -20,7 +20,9 @@ const ErrorTypeZod = z.union([
 	z.literal('UNKNOWN'),
 	z.literal('FORBIDDEN'),
 	z.literal('NOT_FOUND'),
-	z.literal('INVALID_DATA')
+	z.literal('INVALID_DATA'),
+	z.literal('INTERNAL_ERROR'),
+	z.literal('CONFLICT')
 ]);
 
 // This isn't the nicest way of doing it, but its the only way that works properly

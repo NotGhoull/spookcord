@@ -15,6 +15,8 @@ export const ROUTER_GET_MESSAGES_OUTPUT = BaseSpookcordResponseSchema.extend({
 		.object({
 			id: z.string(),
 			name: z.string(),
+			// Here, we should add a "permissions" field, which would tell the user what they can and can't do
+			// For example: CAN_CREATE_CHANNEL, CAN_DELETE_CHANNEL, etc
 			messages: z.array(
 				z.object({
 					id: z.string(),
@@ -36,7 +38,33 @@ export const ROUTER_GET_MESSAGES_INPUT = z.object({
 });
 
 export const ROUTER_UPDATE_MESSAGE_OUTPUT = BaseSpookcordResponseSchema.extend({
-	response: z.object({
-		message: z.string()
-	})
+	response: z
+		.object({
+			message: z.string()
+		})
+		.optional()
+});
+
+export const ROUTER_UPDATE_MESSAGE_INPUT = z.object({
+	newText: z.string(),
+	messageId: z.string()
+});
+
+export const ROUTER_SEND_MESSAGE_OUTPUT = BaseSpookcordResponseSchema.extend({
+	response: z
+		.object({
+			// Just return the message object
+			id: z.string(),
+			body: z.string(),
+			senderId: z.string(),
+			channelId: z.string(),
+			createdAt: z.date(),
+			updatedAt: z.date()
+		})
+		.optional()
+});
+
+export const ROUTER_SEND_MESSAGE_INPUT = z.object({
+	body: z.string(),
+	channelId: z.string()
 });

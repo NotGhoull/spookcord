@@ -2,9 +2,8 @@ import type { StandardRPCCustomJsonSerializer } from '@orpc/client/standard';
 
 export const rawErrorSerializer: StandardRPCCustomJsonSerializer = {
 	type: 21,
-	// Only proceed if 'data' is an object and does NOT contain 'success' or '$__INTERNAL_DONT_PARSE'
-	condition: (data) =>
-		data instanceof Object && !('success' in data) && !('$__INTERNAL_DONT_PARSE' in data),
+	// Only proceed if 'data' is an object and contains "defined"
+	condition: (data) => data instanceof Object && 'defined' in data,
 
 	serialize: (data) => {
 		console.warn('[api:intercept] Response was hijacked, try not to rely on this');

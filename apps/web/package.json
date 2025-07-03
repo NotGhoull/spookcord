@@ -29,7 +29,8 @@
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^5.8.3",
 		"vite": "^6.3.5",
-		"@spookcord/ui": "workspace:*"
+		"@spookcord/ui": "workspace:*",
+		"@spookcord/types": "workspace:*"
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.482.0",

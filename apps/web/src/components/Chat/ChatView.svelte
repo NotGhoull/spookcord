@@ -22,6 +22,8 @@
 	import { toast } from 'svelte-sonner';
 	import { Message } from '@spookcord/ui';
 	import { authClient } from '$lib/auth-client';
+	import { ROUTER_GET_MESSAGES_OUTPUT } from '@spookcord/types/api/channel';
+	import type { z } from 'zod/v4';
 
 	const queryClient = useQueryClient();
 
@@ -74,8 +76,6 @@
 						return;
 					}
 
-					console.log('[Insanity/Debug] The type of the date is string');
-
 					newData.createdAt = new Date(newData.createdAt);
 					newData.updatedAt = new Date(newData.updatedAt);
 
@@ -87,17 +87,21 @@
 					// Optimistic update svelte query cache
 					queryClient.setQueryData(
 						orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-						(oldData: spookcordResponse) => {
+						(oldData: z.infer<typeof ROUTER_GET_MESSAGES_OUTPUT>) => {
+							// oldData = oldData as
 							const newMessageWithSender = {
 								...newData,
 								// Placeholder, while we get the actual users name
 								sender: { name: `Fetching user (${newData.senderId})` }
 							};
 
-							if (!oldData.messages.some((msg) => msg.id === newMessageWithSender.id)) {
+							if (!oldData.response!.messages!.some((msg) => msg.id === newMessageWithSender.id)) {
+								console.log(`[Insanity/debug] Returned!`);
 								return {
 									...oldData,
-									messages: [...oldData.messages, newMessageWithSender]
+									response: {
+										messages: [...oldData.response!.messages, newMessageWithSender]
+									}
 								};
 							}
 						}
@@ -110,10 +114,10 @@
 
 						queryClient.setQueryData(
 							orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-							(currentChannelData: spookcordResponse | undefined) => {
+							(currentChannelData: z.infer<typeof ROUTER_GET_MESSAGES_OUTPUT>) => {
 								if (!currentChannelData) return currentChannelData; // No data to update
 
-								const updatedMessages = currentChannelData.messages.map((msg) =>
+								const updatedMessages = currentChannelData.response!.messages.map((msg) =>
 									msg.id === newMessageWithPlaceholderSender.id
 										? { ...msg, sender: { name: actualSenderName } } // Update the specific message
 										: msg
@@ -121,7 +125,9 @@
 
 								return {
 									...currentChannelData,
-									messages: updatedMessages
+									response: {
+										messages: updatedMessages
+									}
 								};
 							}
 						);

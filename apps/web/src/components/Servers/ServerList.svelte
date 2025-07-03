@@ -5,11 +5,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { serverMembers, user } from '@spookcord/db-schema';
 
-	const servers = createQuery<
-		typeof user & {
-			serverMemberships: (typeof serverMembers.$inferSelect)[];
-		}
-	>(orpc.me.get.queryOptions());
+	const servers = createQuery(orpc.me.get.queryOptions());
 </script>
 
 <div class="flex h-full w-full min-w-24 flex-col py-3">
@@ -22,10 +18,11 @@
 			</div>
 			{#if $servers.isLoading}
 				<p>Loading...</p>
-			{:else if $servers.isError}
+			{:else if $servers.isError || $servers.data?.error}
 				<p>An error occurred</p>
+				<p>${$servers.data?.error?.message ?? $servers.error?.message}</p>
 			{:else if $servers.data}
-				{#each $servers.data.serverMemberships as server (server.serverId)}
+				{#each $servers.data.response!.serverMemberships as server (server.serverId)}
 					<ServerButton selfId={server.serverId ?? 'ERROR!'} />
 				{/each}
 			{/if}

@@ -19,7 +19,8 @@ const ErrorFeatureZod = z.union([
 const ErrorTypeZod = z.union([
 	z.literal('UNKNOWN'),
 	z.literal('FORBIDDEN'),
-	z.literal('NOT_FOUND')
+	z.literal('NOT_FOUND'),
+	z.literal('INVALID_DATA')
 ]);
 
 // This isn't the nicest way of doing it, but its the only way that works properly

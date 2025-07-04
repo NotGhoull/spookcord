@@ -108,9 +108,15 @@
 					);
 
 					// We have to use sender_id here, otherwise, it breaks
-					orpc.user.get.call({ userId: newData.senderId }).then((response: typeof user) => {
+					orpc.user.get.call({ userId: newData.senderId }).then((response) => {
 						console.log('[MESSAGE UPDATE] Got user data!', response);
-						const actualSenderName = response.name;
+						let actualSenderName: string;
+						if (!response.success) {
+							actualSenderName = `Unknown ${response.error!.code}`;
+							toast.error(`Failed to fetch sender name "${response.error!.details}"`);
+						} else {
+							actualSenderName = response.response!.name;
+						}
 
 						queryClient.setQueryData(
 							orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,

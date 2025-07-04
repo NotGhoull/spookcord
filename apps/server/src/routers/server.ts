@@ -12,6 +12,8 @@ import { randomInt } from 'crypto';
 import {
 	SERVER_CREATE_INPUT,
 	SERVER_CREATE_OUTPUT,
+	SERVER_GET_INPUT,
+	SERVER_GET_OUTPUT,
 	SERVER_JOIN_INPUT,
 	SERVER_JOIN_OUTPUT
 } from '@spookcord/types/api/server';
@@ -165,9 +167,12 @@ export const serverRouter = {
 
 	get: os
 		.$context<Context>()
-		.input(z.object({ id: z.string() }))
+		.input(SERVER_GET_INPUT)
+		.output(SERVER_GET_OUTPUT)
 		.use(requireAuth)
 		.handler(async ({ input, context }) => {
+			// Continue to make this query even if we're not sure if they're apart of the manor
+			// since we can use it to verify them after
 			const found = await db.query.server.findFirst({
 				where: eq(server.id, input.id),
 				with: {
@@ -188,7 +193,57 @@ export const serverRouter = {
 					}
 				}
 			});
-			return found;
+
+			if (!found) {
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/NOT_FOUND',
+						message: "Couldn't find a manor with that ID"
+					}
+				};
+			}
+
+			const isMember = found.members.some((member) => member.userId === context.session.user.id);
+
+			if (!isMember) {
+				let errorID = crypto.randomUUID();
+				console.error(
+					`[api:server/error (${errorID})] Unauthorized access attempt to server "${input.id}", by user ${context.session.user.id}. Blocked: Not a member`
+				);
+
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/FORBIDDEN',
+						message: "You cannot view manors that you don't belong to.",
+						details: {
+							logId: errorID
+						}
+					}
+				};
+			}
+
+			let parsed = SERVER_GET_OUTPUT.safeParse({ success: true, response: found });
+			if (!parsed.success) {
+				let errorID = crypto.randomUUID();
+				console.error(
+					`[api:server/error (${errorID})] Malformed data returned from server "${input.id}"`,
+					parsed.error
+				);
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/INVALID_DATA',
+						message: "The returned manor's data was malformed",
+						details: {
+							logId: errorID
+						}
+					}
+				};
+			}
+
+			return parsed.data;
 		})
 };
 

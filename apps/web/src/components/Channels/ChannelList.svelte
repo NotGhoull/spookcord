@@ -8,19 +8,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { derived } from 'svelte/store';
 
-	let serverData = createQuery<
-		unknown,
-		Error,
-		// Some typescript magic
-		typeof server & {
-			members: typeof serverMembers;
-			categories: (typeof category)[] &
-				{
-					// Infered select, so we don't get weird typing issues
-					channels: (typeof channel.$inferSelect)[];
-				}[];
-		}
-	>(
+	let serverData = createQuery(
 		derived(CurrentServer, ($CurrentServer) =>
 			orpc.server.get.queryOptions({
 				input: {
@@ -37,12 +25,12 @@
 <div class="flex h-full w-full flex-col">
 	{#if $serverData.isLoading}
 		<p>Loading...</p>
-	{:else if $serverData.isError}
+	{:else if $serverData.isError || !$serverData.data?.success}
 		<p>Something went wrong ({$serverData.error?.message ?? 'Unkown error'})</p>
-	{:else if $serverData.data && $serverData.data.categories.length > 0}
+	{:else if $serverData.data.response && $serverData.data.response.categories.length > 0}
 		<!-- Header -->
 		<div class="border-separator/20 flex h-16 items-center justify-between border-b px-4">
-			<h2 class="grow truncate text-lg font-medium">{$serverData.data.name}</h2>
+			<h2 class="grow truncate text-lg font-medium">{$serverData.data.response.name}</h2>
 			<button
 				class="hover:bg-button/50 hover:text-accent ml-2 rounded-lg p-2 transition-colors duration-200"
 				><ChevronDown /></button
@@ -51,7 +39,7 @@
 
 		<!-- Channels -->
 		<ScrollArea class="h-full">
-			{#each $serverData.data.categories as c (c.id)}
+			{#each $serverData.data.response.categories as c (c.id)}
 				<div class="mr-2 mb-5 ml-2">
 					<div class="mb-1 flex items-center px-1">
 						<button
@@ -67,7 +55,7 @@
 					</div>
 
 					<div class="space-y-2">
-						{#each c.channels as channel (channel.id)}
+						{#each c.channels! as channel (channel.id)}
 							<ChannelListButton
 								name={channel.name}
 								selected={$CurrentChannel == channel.id}

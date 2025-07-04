@@ -37,3 +37,52 @@ export const SERVER_JOIN_OUTPUT = BaseSpookcordResponseSchema.extend({
 		})
 		.optional()
 });
+
+export const SERVER_GET_INPUT = z.object({
+	id: z.string()
+});
+
+export const SERVER_GET_OUTPUT = BaseSpookcordResponseSchema.extend({
+	response: z
+		.object({
+			id: z.string(),
+			name: z.string(),
+			createdAt: z.date(),
+			updatedAt: z.date(),
+			ownerId: z.string(),
+			imageUrl: z.string().nullable().optional(),
+			inviteCode: z.string(),
+			categories: z.array(
+				z.object({
+					id: z.string(),
+					name: z.string(),
+					createdAt: z.date(),
+					updatedAt: z.date(),
+					serverId: z.string(),
+					position: z.number(),
+					channels: z.array(
+						z.object({
+							id: z.string(),
+							name: z.string(),
+							createdAt: z.date(),
+							updatedAt: z.date(),
+							categoryId: z.string(),
+							type: z.literal(['text', 'voice'])
+						})
+					)
+				})
+			),
+			members: z.array(
+				z.object({
+					id: z.string(),
+					userId: z.string(),
+					serverId: z.string(),
+					joinedAt: z.date(),
+					user: z.object({
+						name: z.string()
+					})
+				})
+			)
+		})
+		.optional()
+});

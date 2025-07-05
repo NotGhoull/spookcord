@@ -28,7 +28,10 @@ const ErrorTypeZod = z.union([
 export const SpookcordErrorSchema = z.object({
 	code: z.templateLiteral([ErrorDomainZod, ':', ErrorFeatureZod, '/', ErrorTypeZod]),
 	message: z.string(),
-	timestamp: z.number().optional().default(new Date().getTime()),
+	timestamp: z
+		.number()
+		.optional()
+		.default(() => new Date().getTime()),
 	details: z.record(z.any(), z.any()).optional()
 });
 

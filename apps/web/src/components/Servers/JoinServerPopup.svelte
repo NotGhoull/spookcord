@@ -4,8 +4,7 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { toast } from 'svelte-sonner';
 	import { orpc } from '$lib/orpc';
-	import { goto } from '$app/navigation';
-	import { emit, eventBus } from '$lib/eventbus';
+	import { emit } from '$lib/eventbus';
 
 	let targetServerCode = $state('');
 

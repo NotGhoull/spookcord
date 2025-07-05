@@ -1,7 +1,5 @@
 import { writable } from 'svelte/store';
 
-export const eventBus = writable({});
-
 const listeners: { [K in keyof options]?: Array<(data: options[K]) => void> } = {};
 
 interface options {

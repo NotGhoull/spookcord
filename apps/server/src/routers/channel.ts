@@ -39,8 +39,10 @@ export const channelRouter = {
 					}
 				})
 				// If we don't catch here, we end up returning a generic 500 error
-				.catch((_) => {
-					// Drop the error here, since its handled literally just below here
+				.catch((e) => {
+					console.warn(
+						`[api:channel/warn] Failed to fetch message: ${e}\n  - Note: Error dropped, to be handled later`
+					);
 				});
 
 			if (!dbResult) {
@@ -61,40 +63,36 @@ export const channelRouter = {
 			};
 		}),
 
-	// TODO: Add auth checks
 	updateMessage: os
+		.$context<Context>()
+		.use(requireAuth)
 		.input(ROUTER_UPDATE_MESSAGE_INPUT)
 		.output(ROUTER_UPDATE_MESSAGE_OUTPUT)
-		.handler(async ({ input }) => {
-			let errorType: DrizzleError | undefined;
-			await db
-				.update(message)
-				.set({ body: input.newText })
-				.where(eq(message.id, input.messageId))
-				.catch((e: DrizzleError) => {
-					errorType = e;
-					// We drop it to avoid weirdness with oRPC
-				});
+		.handler(async ({ input, context }) => {
+			let messageToChange = await db.query.message.findFirst({
+				where: eq(message.id, input.messageId)
+			});
 
-			if (typeof errorType !== 'undefined') {
-				// TODO: Add proper logging
-				let tracking = randomUUID();
-				console.error(
-					`\n============ ERROR LOG =============\n[api:Channel] (${tracking}) | An error happened! \n\t- Name: ${errorType.name}\n\t- Cause: ${errorType.cause}\n\t- Message: ${errorType.message}\n=========== END ERROR ========="`
-				);
-
+			if (!messageToChange) {
 				return {
 					success: false,
 					error: {
-						code: 'Database:Messaging/UNKNOWN',
-						message: 'An unknown error occurred while trying to update the message.',
-						details: {
-							// This is here for debugging, until we actually figure out what the error types are
-							errorId: tracking
-						}
+						code: 'Backend:Messaging/NOT_FOUND',
+						message: "The message you're trying to edit couldn't be found"
 					}
 				};
 			}
+
+			if (messageToChange.senderId !== context.session.user.id) {
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Messaging/FORBIDDEN',
+						message: "You cannot edit a message you don't own"
+					}
+				};
+			}
+
 			return {
 				success: true,
 				response: {

@@ -42,9 +42,9 @@ export const meRouter = {
 			});
 			if (!parsed.success) {
 				// TODO, when we do logging, make this proper
-				let errorID = crypto.randomUUID();
+				let errorId = crypto.randomUUID();
 				console.error(
-					`[api:me/error (${errorID})] Failed to parse ME_GET_OUTPUT, errors:`,
+					`[api:me/error (${errorId})] Failed to parse ME_GET_OUTPUT, errors:`,
 					parsed.error
 				);
 				return {
@@ -53,7 +53,7 @@ export const meRouter = {
 						code: 'Backend:User/INVALID_DATA',
 						message: 'Unable to parse user data, your data may be broken or corrupted.',
 						details: {
-							logId: errorID
+							logId: errorId
 						}
 					}
 				};

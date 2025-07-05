@@ -25,26 +25,12 @@ const ErrorTypeZod = z.union([
 	z.literal('CONFLICT')
 ]);
 
-// This isn't the nicest way of doing it, but its the only way that works properly
-export type ErrorDomain = z.infer<typeof ErrorDomainZod>;
-export type ErrorFeature = z.infer<typeof ErrorFeatureZod>;
-export type ErrorType = z.infer<typeof ErrorTypeZod>;
-
-export type SpookcordErrorCode = `${ErrorDomain}/${ErrorFeature}:${ErrorType}`;
-
 export const SpookcordErrorSchema = z.object({
 	code: z.templateLiteral([ErrorDomainZod, ':', ErrorFeatureZod, '/', ErrorTypeZod]),
 	message: z.string(),
 	timestamp: z.number().optional().default(new Date().getTime()),
 	details: z.record(z.any(), z.any()).optional()
 });
-
-export interface SpookcordError {
-	code: SpookcordErrorCode;
-	message: string;
-	timestamp?: number;
-	details?: Record<string, any>;
-}
 
 export const BaseSpookcordResponseSchema = z.object({
 	// These shouldn't be modified

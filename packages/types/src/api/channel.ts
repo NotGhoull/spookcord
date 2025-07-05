@@ -1,12 +1,6 @@
 import z from 'zod/v4';
 import { BaseSpookcordResponseSchema } from '../index';
 
-export const ROUTER_GET_CHANNEL_OUTPUT = BaseSpookcordResponseSchema.extend({
-	response: z.object({
-		something: z.string()
-	})
-});
-
 // Theres probably a better way to do this, but this is good
 // since it gives us more control over how our data is returned
 // and it would be better for versioned apis (maybe)

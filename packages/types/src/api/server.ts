@@ -67,7 +67,7 @@ export const SERVER_GET_OUTPUT = BaseSpookcordResponseSchema.extend({
 							createdAt: z.date(),
 							updatedAt: z.date(),
 							categoryId: z.string(),
-							type: z.literal(['text', 'voice'])
+							type: z.enum(['text', 'voice'])
 						})
 					)
 				})

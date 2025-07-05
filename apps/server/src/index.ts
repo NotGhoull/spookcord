@@ -8,6 +8,7 @@ import { createContext } from './lib/context';
 import { appRouter } from './routers/index';
 import z from 'zod/v4';
 import { env } from 'bun';
+import { rawErrorSerializer } from '@spookcord/types/serializers/error';
 
 // Envrioment variable stuff
 const envSchema = z.object({
@@ -48,7 +49,9 @@ app.use(
 
 app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 
-const handler = new RPCHandler(appRouter);
+const handler = new RPCHandler(appRouter, {
+	customJsonSerializers: [rawErrorSerializer]
+});
 app.use('/rpc/*', async (c, next) => {
 	const context = await createContext({ context: c });
 	const { matched, response } = await handler.handle(c.req.raw, {

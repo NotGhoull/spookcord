@@ -22,6 +22,8 @@
 	import { toast } from 'svelte-sonner';
 	import { Message } from '@spookcord/ui';
 	import { authClient } from '$lib/auth-client';
+	import { ROUTER_GET_MESSAGES_OUTPUT } from '@spookcord/types/api/channel';
+	import type { z } from 'zod/v4';
 
 	const queryClient = useQueryClient();
 
@@ -38,7 +40,7 @@
 	};
 
 	// Query
-	const messagesQuery = createQuery<spookcordResponse>(
+	const messagesQuery = createQuery(
 		derived(CurrentChannel, ($CurrentChannel) =>
 			orpc.channel.get.queryOptions({
 				input: { channelId: $CurrentChannel }
@@ -74,8 +76,6 @@
 						return;
 					}
 
-					console.log('[Insanity/Debug] The type of the date is string');
-
 					newData.createdAt = new Date(newData.createdAt);
 					newData.updatedAt = new Date(newData.updatedAt);
 
@@ -87,33 +87,43 @@
 					// Optimistic update svelte query cache
 					queryClient.setQueryData(
 						orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-						(oldData: spookcordResponse) => {
+						(oldData: z.infer<typeof ROUTER_GET_MESSAGES_OUTPUT>) => {
+							// oldData = oldData as
 							const newMessageWithSender = {
 								...newData,
 								// Placeholder, while we get the actual users name
 								sender: { name: `Fetching user (${newData.senderId})` }
 							};
 
-							if (!oldData.messages.some((msg) => msg.id === newMessageWithSender.id)) {
+							if (!oldData.response!.messages!.some((msg) => msg.id === newMessageWithSender.id)) {
+								console.log(`[Insanity/debug] Returned!`);
 								return {
 									...oldData,
-									messages: [...oldData.messages, newMessageWithSender]
+									response: {
+										messages: [...oldData.response!.messages, newMessageWithSender]
+									}
 								};
 							}
 						}
 					);
 
 					// We have to use sender_id here, otherwise, it breaks
-					orpc.user.get.call({ userId: newData.senderId }).then((response: typeof user) => {
+					orpc.user.get.call({ userId: newData.senderId }).then((response) => {
 						console.log('[MESSAGE UPDATE] Got user data!', response);
-						const actualSenderName = response.name;
+						let actualSenderName: string;
+						if (!response.success) {
+							actualSenderName = `Unknown ${response.error!.code}`;
+							toast.error(`Failed to fetch sender name "${response.error!.details}"`);
+						} else {
+							actualSenderName = response.response!.name;
+						}
 
 						queryClient.setQueryData(
 							orpc.channel.get.queryOptions({ input: { channelId: $CurrentChannel } }).queryKey,
-							(currentChannelData: spookcordResponse | undefined) => {
+							(currentChannelData: z.infer<typeof ROUTER_GET_MESSAGES_OUTPUT>) => {
 								if (!currentChannelData) return currentChannelData; // No data to update
 
-								const updatedMessages = currentChannelData.messages.map((msg) =>
+								const updatedMessages = currentChannelData.response!.messages.map((msg) =>
 									msg.id === newMessageWithPlaceholderSender.id
 										? { ...msg, sender: { name: actualSenderName } } // Update the specific message
 										: msg
@@ -121,7 +131,9 @@
 
 								return {
 									...currentChannelData,
-									messages: updatedMessages
+									response: {
+										messages: updatedMessages
+									}
 								};
 							}
 						);
@@ -176,7 +188,7 @@
 	function handleMessageEdit(message: string, messageId: string) {
 		orpc.channel.updateMessage.call({ messageId: messageId, newText: message }).then((data) => {
 			if (!data.success) {
-				toast.error(`Failed to edit message ${data.message ?? 'Unknown error'}`);
+				toast.error(`Failed to edit message ${data.response.message ?? 'Unknown error'}`);
 			}
 		});
 	}
@@ -216,7 +228,8 @@
 				<Hash class="text-primary h-5 w-5" />
 			</div>
 			<h2 class="text-primary text-lg font-medium">
-				{$messagesQuery.data?.name ?? 'Loading'}
+				<!-- TODO: Add better error handling here -->
+				{$messagesQuery.data?.response?.name ?? 'Loading'}
 			</h2>
 		</div>
 		<div class="flex items-center gap-2">
@@ -256,7 +269,12 @@
 				<p>There was an issue fetching messages. Please try again.</p>
 				<p>Error: {$messagesQuery.error.message}</p>
 			</div>
-		{:else if $messagesQuery.data.messages.length === 0}
+		{:else if !$messagesQuery.data?.success}
+			<div>
+				<p>This is where the error message would go</p>
+				<p>{$messagesQuery.data!.error!.message} ({$messagesQuery.data!.error!.code})</p>
+			</div>
+		{:else if $messagesQuery.data?.response?.messages.length === 0}
 			<div class="flex h-full w-full flex-col items-center justify-center gap-2" transition:blur>
 				<MessageCircleDashedIcon class="size-20" />
 				<h1 class="text-3xl font-bold">No messages yet</h1>
@@ -264,7 +282,7 @@
 			</div>
 		{:else}
 			<div class="space-y-6">
-				{#each $messagesQuery.data.messages as message (message.id)}
+				{#each $messagesQuery.data!.response!.messages as message (message.id)}
 					<!-- Sometimes, createdAt() ends up being undefined, this normally happens when a new message is made though, so we can assume its new -->
 					<div in:fly|global={{ y: 40, duration: 600 }} out:blur|local={{ duration: 250 }}>
 						<Message

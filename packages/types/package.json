@@ -1,0 +1,36 @@
+{
+	"name": "@spookcord/types",
+	"version": "1.0.0",
+	"private": true,
+	"main": "./src/index.ts",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./api/*": {
+			"types": "./dist/api/*.d.ts",
+			"import": "./dist/api/*.js"
+		},
+		"./serializers/*": {
+			"types": "./dist/serializers/*.d.ts",
+			"import": "./dist/serializers/*.js"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"build": "bunx tsc && bunx tsc-alias"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5",
+		"@orpc/client": "^1.2.0"
+	},
+	"dependencies": {
+		"zod": "^3.25.67",
+		"@spookcord/db-schema": "workspace:*"
+	}
+}

@@ -8,14 +8,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { derived } from 'svelte/store';
 
-	let members = createQuery<
-		typeof server & {
-			members: (typeof serverMembers.$inferSelect)[] &
-				{
-					user: typeof user.$inferSelect;
-				}[];
-		}
-	>(
+	let members = createQuery(
 		derived(CurrentServer, ($CurrentServer) =>
 			orpc.server.get.queryOptions({ input: { id: $CurrentServer } })
 		)
@@ -47,19 +40,19 @@
 	<ScrollArea class="flex-1 px-3">
 		{#if $members.isLoading}
 			<p>Loading members...</p>
-		{:else if $members.isError}
-			<p class="text-red-500">{$members.error.message}</p>
+		{:else if $members.isError || !$members.data?.success}
+			<p class="text-red-500">{$members.error?.message || $members.data!.error!.message}</p>
 		{:else if roles.length > 0}
 			<!-- TODO: Add proper role checking -->
 			{#each roles as role (role.id)}
 				<div class="mb-1 px-2">
 					<h3 class="text-xs font-semibold" style:color={role.color}>
-						{role.name} — {$members.data.members.length}
+						{role.name} — {$members.data.response!.members.length}
 					</h3>
 				</div>
 
 				<div class="space-y-1">
-					{#each $members.data.members as member (member.id)}
+					{#each $members.data.response!.members as member (member.id)}
 						<button
 							class="group hover:bg-button/50 flex w-full items-center gap-3 rounded-xl px-2 py-2 transition-all duration-200 hover:shadow-[0_0_15px_rgba(0,0,0,0.1)]"
 						>

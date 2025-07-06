@@ -11,10 +11,11 @@
 	import { CurrentServer } from '$lib/localStates/chat';
 
 	import * as Dialog from '$lib/components/ui/dialog';
+	import CreateServerPopup from '../../components/Servers/CreateServerPopup.svelte';
 
 	let isMobile: boolean = $state(false);
 	let activeView: 'servers' | 'channels' | 'chat' | 'members' | 'home' = $state('chat');
-	let showSettings: boolean = $state(true);
+	let showSettings: boolean = $state(false);
 	let memberVisibility = $state(true); // Create crossfade transition
 
 	isMemberViewVisible.subscribe((data) => {

@@ -33,7 +33,7 @@ In your opinion, how critical is this bug?
 
 - [ ] **Critical:** Blocks core functionality, causes data loss, or poses a security vulnerability.
 - [ ] **High:** Significantly impacts user experience, breaks major features
-- [ ] [ ] **Medium:** Annoying, impacts minor features, or has a clear workaround.
+- [ ] **Medium:** Annoying, impacts minor features, or has a clear workaround.
 - [ ] **Low:** Minor visual glitch, cosmetic issue, or easily avoidable.
 
 **Impact**

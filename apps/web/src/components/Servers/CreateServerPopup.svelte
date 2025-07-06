@@ -8,7 +8,7 @@
 	import { Button } from '@spookcord/ui';
 	import { Dialog, Portal } from 'bits-ui';
 	import { toast } from 'svelte-sonner';
-	import { z } from 'zod/v4-mini';
+	import { z } from 'zod/v4';
 
 	let { open = $bindable(false) } = $props();
 	let serverName = $state('');

@@ -21,6 +21,7 @@ assignees: NotGhoull
 > What did you expect to happen?
 
 ## Steps to Reproduce
+
 Please provide a precise, numbered list of steps to reproduce the behavior.
 
 1.  Go to '...'
@@ -29,6 +30,7 @@ Please provide a precise, numbered list of steps to reproduce the behavior.
 4.  Observe '....'
 
 ### Severity
+
 In your opinion, how critical is this bug?
 
 - [ ] **Critical:** Blocks core functionality, causes data loss, or poses a security vulnerability.

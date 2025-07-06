@@ -102,7 +102,7 @@
 						<p class="text-muted text-xs">
 							More options will come in the future, this is all we have for now
 							<br />
-							*Your manor {serverName ? `"${serverName}"` : ''} will be created with a default catagory
+							*Your manor {serverName ? `"${serverName}"` : ''} will be created with a default category
 							and channel
 						</p>
 					</div>

@@ -12,12 +12,15 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
+		"@internationalized/date": "^3.8.1",
+		"@spookcord/types": "workspace:*",
+		"@spookcord/ui": "workspace:*",
 		"@sveltejs/adapter-auto": "^6.0.1",
 		"@sveltejs/kit": "^2.21.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@tailwindcss/vite": "^4.1.7",
 		"@tanstack/svelte-query-devtools": "^5.76.0",
-		"bits-ui": "^1.5.0",
+		"bits-ui": "^2.8.6",
 		"clsx": "^2.1.1",
 		"svelte": "^5.30.2",
 		"svelte-adapter-bun": "^0.5.2",
@@ -28,12 +31,10 @@
 		"tailwindcss": "^4.1.7",
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^5.8.3",
-		"vite": "^6.3.5",
-		"@spookcord/ui": "workspace:*",
-		"@spookcord/types": "workspace:*"
+		"vite": "^6.3.5"
 	},
 	"dependencies": {
-		"@lucide/svelte": "^0.482.0",
+		"@lucide/svelte": "^0.515.0",
 		"@orpc/client": "^1.2.0",
 		"@orpc/server": "^1.2.0",
 		"@orpc/svelte-query": "^1.2.0",

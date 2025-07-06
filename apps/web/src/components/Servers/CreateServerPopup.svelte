@@ -68,10 +68,6 @@
 							fullWidth
 							icon={HousePlusIcon}
 							onclick={async () => {
-								if (!serverName) {
-									toast.error('Please make sure you made a name');
-									return;
-								}
 								let schemaResult = SERVER_CREATE_INPUT.safeParse({ serverName: serverName });
 								if (!schemaResult.success) {
 									let pretty = z.prettifyError(schemaResult.error);
@@ -80,27 +76,26 @@
 								}
 
 								open = false;
-								let errorMsg: string = 'Unexpected error';
-								const promise = new Promise<string>(async (resolve, reject) => {
-									const response = await orpc.server.create.call({ serverName: serverName });
-
-									if (!response.success) {
-										// If we don't get a error object, its most likely a network error
-										errorMsg = response.error!.message ?? 'Network error';
-										console.log('PROMISE REJECTED!');
-										reject(errorMsg);
-										return;
-									}
-
-									resolve('Created server!');
-									emit('updateManorList', null);
-								});
+								const promise = orpc.server.create
+									.call({ serverName: serverName })
+									.then((response) => {
+										if (!response.success) {
+											throw new Error(response.error!.message ?? 'Network error');
+										}
+										emit('updateManorList', null);
+										return 'Created server!';
+									});
 								toast.promise(promise, {
 									loading: 'Creating your manor...',
-									success: (message) => {
-										return message;
-									},
-									error: errorMsg
+									success: (message) => message,
+									// We have to do this, because typescript :)
+									error: (err: unknown) => {
+										if (err instanceof Error) {
+											return err.message;
+										}
+
+										return 'An unexpected error occurred';
+									}
 								});
 							}}>Create manor</Button
 						>

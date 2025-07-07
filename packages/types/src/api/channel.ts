@@ -62,3 +62,22 @@ export const ROUTER_SEND_MESSAGE_INPUT = z.object({
 	body: z.string(),
 	channelId: z.string()
 });
+
+export const ROUTER_CREATE_CHANNEL_INPUT = z.object({
+	categoryId: z.string(),
+	type: z.enum(['text', 'voice']),
+	name: z.string().min(1, 'Channel name cannot be empty')
+});
+
+export const ROUTER_CREATE_CHANNEL_OUTPUT = BaseSpookcordResponseSchema.extend({
+	response: z
+		.object({
+			id: z.string(),
+			name: z.string().min(1, 'Channel name cannot be empty'),
+			createdAt: z.date(),
+			updatedAt: z.date(),
+			categoryId: z.string(),
+			type: z.enum(['text', 'voice'])
+		})
+		.optional()
+});

@@ -2,8 +2,10 @@ import { db } from '@/db';
 import type { Context } from '@/lib/context';
 import { requireAuth } from '@/lib/orpc';
 import { os } from '@orpc/server';
-import { channel, message } from '@spookcord/db-schema';
+import { category, channel, message } from '@spookcord/db-schema';
 import {
+	ROUTER_CREATE_CHANNEL_INPUT,
+	ROUTER_CREATE_CHANNEL_OUTPUT,
 	ROUTER_GET_MESSAGES_INPUT,
 	ROUTER_GET_MESSAGES_OUTPUT,
 	ROUTER_SEND_MESSAGE_INPUT,
@@ -11,8 +13,7 @@ import {
 	ROUTER_UPDATE_MESSAGE_INPUT,
 	ROUTER_UPDATE_MESSAGE_OUTPUT
 } from '@spookcord/types/api/channel';
-import { randomUUID } from 'crypto';
-import { DrizzleError, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import z from 'zod';
 
 export const channelRouter = {
@@ -132,5 +133,85 @@ export const channelRouter = {
 					...inserted
 				}
 			};
+		}),
+
+	create: os
+		.$context<Context>()
+		.use(requireAuth)
+		.input(ROUTER_CREATE_CHANNEL_INPUT)
+		.output(ROUTER_CREATE_CHANNEL_OUTPUT)
+		.handler(async ({ input, context }) => {
+			if (input.type == 'voice') {
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Internal/FORBIDDEN',
+						message: 'Currently, voice channels are not implemented, and cannot be created.'
+					}
+				};
+			}
+
+			let result = await db.query.category.findFirst({
+				where: eq(category.id, input.categoryId),
+				with: {
+					server: true
+				}
+			});
+
+			if (!result) {
+				return {
+					success: false,
+					error: {
+						// Potentially, we could create a new type for this "category"
+						code: 'Backend:Messaging/NOT_FOUND',
+						message: "Couldn't find a category to create channel in."
+					}
+				};
+			}
+
+			if (context.session.user.id !== result.server.ownerId) {
+				// Currently, only owners can create channels, until we have permissions implemented
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/FORBIDDEN',
+						message: 'Only manor owners are allowed to create channels.'
+					}
+				};
+			}
+
+			const [created] = await db
+				.insert(channel)
+				.values({
+					name: input.name,
+					categoryId: input.categoryId,
+					type: input.type
+				})
+				.returning();
+
+			const parsed = ROUTER_CREATE_CHANNEL_OUTPUT.safeParse({
+				success: true,
+				response: created
+			});
+			if (!parsed.success) {
+				const errorId = crypto.randomUUID();
+				console.error(
+					`[api:channel (${errorId})] Channel returned malformed data: `,
+					parsed.error,
+					created
+				);
+				return {
+					success: false,
+					error: {
+						code: 'Backend:Manor/INVALID_DATA',
+						message: 'The data is malformed or corrupted.',
+						details: {
+							logId: errorId
+						}
+					}
+				};
+			}
+
+			return parsed.data;
 		})
 };

@@ -3,10 +3,16 @@
 	import { CurrentChannel, CurrentServer } from '$lib/localStates/chat';
 	import { orpc } from '$lib/orpc';
 	import { ChevronDown, Plus, MessageCircleOff } from '@lucide/svelte';
-	import { category, channel, server, serverMembers } from '@spookcord/db-schema';
 	import { ChannelListButton } from '@spookcord/ui';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { derived } from 'svelte/store';
+	import CreateChannelPopup from './CreateChannelPopup.svelte';
+	import { subscribe } from '$lib/eventbus';
+	import { onDestroy } from 'svelte';
+
+	let channelCreationPopupOpen = $state(false);
+	let channelCreationOwningName = $state('');
+	let channelCreationOwningCategory = $state();
 
 	let serverData = createQuery(
 		derived(CurrentServer, ($CurrentServer) =>
@@ -19,7 +25,13 @@
 		)
 	);
 
-	$inspect($serverData.data, console.warn);
+	let unsubscribe = subscribe('updateChannelList', () => {
+		$serverData.refetch();
+	});
+
+	onDestroy(() => {
+		unsubscribe();
+	});
 </script>
 
 <div class="flex h-full w-full flex-col">
@@ -41,16 +53,20 @@
 		<ScrollArea class="h-full">
 			{#each $serverData.data.response.categories as c (c.id)}
 				<div class="mr-2 mb-5 ml-2">
-					<div class="mb-1 flex items-center px-1">
+					<div class="group mb-1 flex items-center px-1">
 						<button
-							class="text-muted hover:text-foreground group flex items-center gap-1 text-xs font-semibold transition-colors duration-200"
+							class="text-muted group-hover:text-primary group flex items-center gap-1 text-xs font-semibold transition-colors duration-200"
 						>
 							<ChevronDown class="h-4 w-4 transition-transform duration-200" />
-							<span class="group-hover:text-accent transition-colors duration-200">{c.name}</span>
+							<span class="group-hover:text-primary transition-colors duration-200">{c.name}</span>
 						</button>
 						<button
-							class="text-muted hover:text-accent ml-auto rounded-lg p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:opacity-100"
-							><Plus class="h-4 w-4" /></button
+							class="text-primary ml-auto cursor-pointer rounded-lg p-1 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:opacity-100"
+							onclick={() => {
+								channelCreationPopupOpen = true;
+								channelCreationOwningName = c.name;
+								channelCreationOwningCategory = c.id;
+							}}><Plus class="h-4 w-4" /></button
 						>
 					</div>
 
@@ -76,3 +92,11 @@
 		</div>
 	{/if}
 </div>
+
+{#if channelCreationPopupOpen}
+	<CreateChannelPopup
+		bind:open={channelCreationPopupOpen}
+		owningName={channelCreationOwningName}
+		owningCategory={channelCreationOwningCategory}
+	/>
+{/if}

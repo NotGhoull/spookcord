@@ -1,9 +1,10 @@
-import { writable } from 'svelte/store';
-
 const listeners: { [K in keyof options]?: Array<(data: options[K]) => void> } = {};
 
 interface options {
 	updateManorList: null;
+	updateChannelList: null;
+	// ^ This should be removed in favor of a realtime channel
+	//   OR we fire a message, through a channel
 }
 
 export function emit<K extends keyof options>(eventName: K, data: options[K]) {

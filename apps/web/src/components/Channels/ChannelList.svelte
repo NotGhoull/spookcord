@@ -3,12 +3,16 @@
 	import { CurrentChannel, CurrentServer } from '$lib/localStates/chat';
 	import { orpc } from '$lib/orpc';
 	import { ChevronDown, Plus, MessageCircleOff } from '@lucide/svelte';
-	import { category, channel, server, serverMembers } from '@spookcord/db-schema';
 	import { ChannelListButton } from '@spookcord/ui';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { toast } from 'svelte-sonner';
 	import { derived } from 'svelte/store';
 	import CreateChannelPopup from './CreateChannelPopup.svelte';
+	import { subscribe } from '$lib/eventbus';
+	import { onDestroy } from 'svelte';
+
+	let channelCreationPopupOpen = $state(false);
+	let channelCreationOwningName = $state('');
+	let channelCreationOwningCategory = $state();
 
 	let serverData = createQuery(
 		derived(CurrentServer, ($CurrentServer) =>
@@ -21,7 +25,13 @@
 		)
 	);
 
-	$inspect($serverData.data, console.warn);
+	let unsubscribe = subscribe('updateChannelList', () => {
+		$serverData.refetch();
+	});
+
+	onDestroy(() => {
+		unsubscribe();
+	});
 </script>
 
 <div class="flex h-full w-full flex-col">
@@ -53,7 +63,9 @@
 						<button
 							class="text-primary ml-auto cursor-pointer rounded-lg p-1 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:opacity-100"
 							onclick={() => {
-								toast('Clicked!');
+								channelCreationPopupOpen = true;
+								channelCreationOwningName = c.name;
+								channelCreationOwningCategory = c.id;
 							}}><Plus class="h-4 w-4" /></button
 						>
 					</div>
@@ -81,4 +93,10 @@
 	{/if}
 </div>
 
-<CreateChannelPopup />
+{#if channelCreationPopupOpen}
+	<CreateChannelPopup
+		bind:open={channelCreationPopupOpen}
+		owningName={channelCreationOwningName}
+		owningCatagory={channelCreationOwningCategory}
+	/>
+{/if}

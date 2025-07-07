@@ -73,7 +73,7 @@ export const ROUTER_CREATE_CHANNEL_OUTPUT = BaseSpookcordResponseSchema.extend({
 	response: z
 		.object({
 			id: z.string(),
-			name: z.string(),
+			name: z.string().min(1),
 			createdAt: z.date(),
 			updatedAt: z.date(),
 			categoryId: z.string(),

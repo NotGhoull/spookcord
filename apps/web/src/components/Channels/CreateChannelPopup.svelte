@@ -1,12 +1,19 @@
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	import { emit } from '$lib/eventbus';
+	import { orpc } from '$lib/orpc';
 	import { ExternalLinkIcon, HashIcon, InfoIcon, Volume2Icon, XIcon } from '@lucide/svelte';
+	import { ROUTER_CREATE_CHANNEL_INPUT } from '@spookcord/types/api/channel';
 	import { Button } from '@spookcord/ui';
 	import { Dialog } from 'bits-ui';
+	import { toast } from 'svelte-sonner';
+	import { prettifyError } from 'zod/v4';
 
-	let { open = $bindable(false) } = $props();
+	let { open = $bindable(false), owningCatagory, owningName } = $props();
+
 	let selected = $state('text');
+	let requestInProgress = $state(false);
+	let channelName = $state('');
 </script>
 
 <Dialog.Root bind:open>
@@ -34,7 +41,9 @@
 					<div></div>
 					<h2 class="text-foreground text-xl font-bold">Create a Channel</h2>
 					<p class="text-muted text-sm">
-						Creating a new channel in <span class="text-primary font-bold">General</span>
+						Creating a new channel in <span class="text-primary font-bold"
+							>{owningName ?? 'Unknown'}</span
+						>
 					</p>
 				</div>
 
@@ -44,7 +53,12 @@
 						<h3 class="text-foreground text-lg font-semibold">Channel name</h3>
 						<div class="relative mr-4">
 							<HashIcon class="text-muted absolute top-[25%] left-2.5 h-5 w-5" />
-							<Input placeholder="My insane channel" class="placeholder:text-muted pl-8" />
+							<Input
+								disabled={requestInProgress}
+								bind:value={channelName}
+								placeholder="My insane channel"
+								class="placeholder:text-muted pl-8"
+							/>
 						</div>
 						<p class="text-muted text-xs">
 							This will be the name of the channel, you will <b>NOT</b> be able to change this later
@@ -89,12 +103,48 @@
 						</div>
 					</div>
 					<div class="mr-4 flex gap-2 pb-8">
-						<Button variant="outline" fullWidth>Cancel</Button>
+						<Button variant="outline" fullWidth onclick={() => (open = false)}>Cancel</Button>
 						<Button
 							fullWidth
+							disabled={requestInProgress}
 							onclick={() => {
-								console.log('Do the thing');
-							}}>Create channel</Button
+								// For whatever reason the schema doesn't pick this up
+								if (channelName === undefined || channelName === '') {
+									toast.error('Please enter a name');
+									return;
+								}
+								let parseResult = ROUTER_CREATE_CHANNEL_INPUT.safeParse({
+									name: channelName,
+									type: 'text',
+									owningCategory: owningCatagory
+								});
+								if (!parseResult.success) {
+									toast.error(prettifyError(parseResult.error));
+									console.error(parseResult.error, channelName, owningCatagory);
+									return;
+								}
+
+								const promise = orpc.channel.create.call(parseResult.data).then((resp) => {
+									if (!resp.success) {
+										throw new Error(resp.error!.message ?? 'Network Error');
+									}
+
+									open = false;
+									emit('updateChannelList', null);
+									return 'Channel created!';
+								});
+
+								toast.promise(promise, {
+									loading: 'Creating channel...',
+									success: (msg) => msg,
+									error: (err: unknown) => {
+										if (err instanceof Error) {
+											return err.message;
+										}
+										return 'An unexpected error occurred';
+									}
+								});
+							}}>{requestInProgress ? 'Creating...' : 'Create channel'}</Button
 						>
 					</div>
 				</div>
@@ -112,7 +162,7 @@
 	disabled?: boolean
 )}
 	<div
-		class={`group relative  mr-4 rounded-xl border-2 p-4 transition-all duration-200  ${disabled ? 'text-muted cursor-not-allowed opacity-50' : 'cursor-pointer'} ${selected === value ? 'border-primary/50 bg-primary/5' : 'border-white/10'}`}
+		class={`group relative  mr-4 rounded-xl border-2 p-4 transition-all duration-200  ${disabled || requestInProgress ? 'text-muted cursor-not-allowed opacity-50' : 'cursor-pointer'} ${selected === value ? 'border-primary/50 bg-primary/5' : 'border-white/10'}`}
 	>
 		<div class={`flex items-center gap-3`}>
 			<div

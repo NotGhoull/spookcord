@@ -193,7 +193,7 @@ export const channelRouter = {
 
 			const parsed = ROUTER_CREATE_CHANNEL_OUTPUT.safeParse({
 				success: true,
-				response: { created }
+				response: created
 			});
 			if (!parsed.success) {
 				const errorId = crypto.randomUUID();

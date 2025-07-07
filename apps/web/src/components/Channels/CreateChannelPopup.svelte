@@ -9,7 +9,7 @@
 	import { toast } from 'svelte-sonner';
 	import { prettifyError } from 'zod/v4';
 
-	let { open = $bindable(false), owningCatagory, owningName } = $props();
+	let { open = $bindable(false), owningCategory, owningName } = $props();
 
 	let selected = $state('text');
 	let requestInProgress = $state(false);
@@ -108,19 +108,14 @@
 							fullWidth
 							disabled={requestInProgress}
 							onclick={() => {
-								// For whatever reason the schema doesn't pick this up
-								if (channelName === undefined || channelName === '') {
-									toast.error('Please enter a name');
-									return;
-								}
 								let parseResult = ROUTER_CREATE_CHANNEL_INPUT.safeParse({
 									name: channelName,
 									type: 'text',
-									owningCategory: owningCatagory
+									categoryId: owningCategory
 								});
 								if (!parseResult.success) {
 									toast.error(prettifyError(parseResult.error));
-									console.error(parseResult.error, channelName, owningCatagory);
+									console.error(parseResult.error, channelName, owningCategory);
 									return;
 								}
 
@@ -183,20 +178,4 @@
 			</div>
 		</div>
 	</div>
-	<!-- <div
-		class={`flex w-full items-center space-x-3 ${disabled ? 'text-muted [&>*]:cursor-not-allowed' : '[&>*]:cursor-pointer'}`}
-	>
-		<RadioGroupItem {id} {value} {disabled} />
-		<Label for={id} class="flex  items-center gap-2">
-			{#if !altIcon}
-				<HashIcon />
-			{:else}
-				<Volume2Icon />
-			{/if}
-			<div class="flex flex-col gap-1">
-				<p class="font-medium">{title}</p>
-				<p class="text-muted text-xs">{description}</p>
-			</div>
-		</Label>
-	</div> -->
 {/snippet}

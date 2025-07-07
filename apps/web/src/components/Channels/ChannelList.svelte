@@ -97,6 +97,6 @@
 	<CreateChannelPopup
 		bind:open={channelCreationPopupOpen}
 		owningName={channelCreationOwningName}
-		owningCatagory={channelCreationOwningCategory}
+		owningCategory={channelCreationOwningCategory}
 	/>
 {/if}

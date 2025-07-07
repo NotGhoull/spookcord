@@ -13,10 +13,8 @@ import {
 	ROUTER_UPDATE_MESSAGE_INPUT,
 	ROUTER_UPDATE_MESSAGE_OUTPUT
 } from '@spookcord/types/api/channel';
-import { randomUUID } from 'crypto';
-import { DrizzleError, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import z from 'zod';
-import { authRouter } from './auth';
 
 export const channelRouter = {
 	get: os
@@ -154,7 +152,7 @@ export const channelRouter = {
 			}
 
 			let result = await db.query.category.findFirst({
-				where: eq(category.id, input.owningCategory),
+				where: eq(category.id, input.categoryId),
 				with: {
 					server: true
 				}
@@ -186,7 +184,7 @@ export const channelRouter = {
 				.insert(channel)
 				.values({
 					name: input.name,
-					categoryId: input.owningCategory,
+					categoryId: input.categoryId,
 					type: input.type
 				})
 				.returning();

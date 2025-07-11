@@ -16,9 +16,6 @@
 	"dependencies": {
 		"@orpc/client": "^1.2.0",
 		"@orpc/server": "^1.2.0",
-		"@spookcord/db-schema": "workspace:*",
-		"@spookcord/types": "workspace:*",
-		"@types/jsonwebtoken": "^9.0.9",
 		"better-auth": "^1.2.8",
 		"dotenv": "^16.5.0",
 		"drizzle-orm": "^latest",
@@ -28,7 +25,10 @@
 		"zod": "^3.25.56"
 	},
 	"devDependencies": {
+		"@spookcord/db-schema": "workspace:*",
+		"@spookcord/types": "workspace:*",
 		"@types/bun": "^1.2.13",
+		"@types/jsonwebtoken": "^9.0.9",
 		"@types/pg": "^8.15.2",
 		"drizzle-kit": "^latest",
 		"tsc-alias": "^1.8.16",

@@ -1,36 +1,36 @@
-FROM oven/bun:alpine AS base
+FROM oven/bun:1.1.18-alpine AS base
 
+# --- Building ---
 FROM base AS builder
-
 RUN apk update
-# Set working directory
-WORKDIR /app
-RUN bun install -g turbo
 
-# This assumes its being run in the base spookcord directory
+WORKDIR /app
+
 COPY . .
-RUN turbo prune server --docker
 
-# Add lockfile and package.json's of isolated subworkspace
+RUN bunx turbo prune server --docker
+
+# --- Installer ---
 FROM base AS installer
-RUN apk update
+
 WORKDIR /app
 
-# First install dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
-RUN bun install
-
-# Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
 
-RUN bun turbo compile
+# Install deps & Compile
+RUN bun install --production --ignore-scripts --frozen-lockfile
+RUN bunx turbo compile
 
+# --- Runner ---
 FROM base AS runner
+
 WORKDIR /app
 
-# Don't run production as root
 USER bun
-COPY --from=installer /app/apps/server/server ./server
+
+COPY --from=installer --chown=bun:bun /app/apps/server/server ./server
 
 EXPOSE 3000/tcp
-CMD ./server
+
+CMD ["./server"]

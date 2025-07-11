@@ -34,7 +34,8 @@
 			"persistent": true
 		},
 		"compile": {
-			"cache": true
+			"cache": true,
+			"dependsOn": ["^build"]
 		}
 	}
 }

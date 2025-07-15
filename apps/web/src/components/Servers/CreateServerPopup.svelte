@@ -20,7 +20,7 @@
 			class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/70 backdrop-blur-md"
 		/>
 		<Dialog.Content
-			class="bg-background/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 border-separator/30 fixed top-[50%] left-[50%] z-50 flex h-auto max-h-[90vh] w-full max-w-3xl translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-3xl border p-0 p-0 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)] outline-hidden backdrop-blur-xl"
+			class="bg-background/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 border-separator/30 fixed top-[50%] left-[50%] z-50 flex h-auto max-h-[90vh] w-full max-w-3xl translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-3xl border p-0 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)] outline-hidden backdrop-blur-xl"
 			trapFocus={true}
 			onEscapeKeydown={(e) => {
 				e.preventDefault();

@@ -1,35 +1,41 @@
-FROM oven/bun:alpine AS base
+FROM oven/bun:1.2.18-alpine AS base
 
+# --- Building ---
 FROM base AS builder
-# Set working directory
-WORKDIR /app
-RUN bun install -g turbo typescript
-COPY . .
-RUN turbo prune web --docker
+RUN apk update
 
-# Add lockfile and package.json's of isolated subworkspace
+WORKDIR /app
+
+COPY . .
+
+RUN bunx turbo prune web --docker
+
+# --- Installer ---
 FROM base AS installer
 
 WORKDIR /app
 
-# First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
-RUN bun install
-
-# Build the project
 COPY --from=builder /app/out/full/ .
 
-# TODO: Find a better way of doing this
-ENV PUBLIC_SERVER_URL=localhost:3000
+# Install deps & Compile
+# Note: Once we fix --production and --frozen-lockfile just destroying it
+#       then we should go back to using those, since this is incredibly bloated
+RUN bun install --ignore-scripts
+# We should find a better way to do this
+ENV PUBLIC_SERVER_URL=http://localhost:3000
+RUN bunx turbo build
 
-RUN bun turbo build
-
+# --- Runner ---
 FROM base AS runner
+
 WORKDIR /app
 
-# Don't run production as root
 USER bun
 
-COPY --from=installer /app/apps/web/build/ ./
+COPY --from=installer --chown=bun:bun /app/apps/web/build ./
+COPY --from=installer --chown=bun:bun /app/node_modules ./node_modules
 
-CMD ["bun", "./index.js"]
+EXPOSE 3000/tcp
+
+CMD ["bun", "run", "start"]

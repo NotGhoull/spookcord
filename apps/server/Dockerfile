@@ -30,6 +30,7 @@ WORKDIR /app
 USER bun
 
 COPY --from=installer --chown=bun:bun /app/apps/server/server ./server
+COPY --from=installer --chown=bun:bun /app/apps/server/src/db/migrations ./src/db/migrations
 
 EXPOSE 3000/tcp
 

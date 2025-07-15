@@ -9,6 +9,7 @@ import { appRouter } from './routers/index';
 import z from 'zod/v4';
 import { env } from 'bun';
 import { rawErrorSerializer } from '@spookcord/types/serializers/error';
+import { runMigrations } from './db';
 
 // Envrioment variable stuff
 const envSchema = z.object({
@@ -33,6 +34,7 @@ if (result.error) {
 }
 
 console.log('Enviroment OK!');
+await runMigrations();
 
 const app = new Hono();
 

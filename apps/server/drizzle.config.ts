@@ -18,6 +18,5 @@ export default defineConfig({
 		table: 'journal',
 		schema: 'drizzle'
 	},
-	verbose: true,
-	strict: true
+	verbose: true
 });

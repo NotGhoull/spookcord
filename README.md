@@ -76,7 +76,6 @@ Before you begin, ensure you have the following installed:
       > This command will output the local Supabase URLs and anon key. Make note of these, especially the DATABASE_URL and SUPABASE_URL (usually http://localhost:54321) and SUPABASE_ANON_KEY (which you'll need for client-side configuration if you were using the Supabase client directly, though your setup abstracts this).
     - **Supabase Cloud:** You'll configure your `.env` variables (see next step) with your Supabase cloud project details.
 4.  **Set Environment Variables:** You'll need to set several environment variables. Create a `.env` file in the project root and add the following:
-
     - **Server-side variables (/apps/server/.env):**
       ```
       CORS_ORIGIN=http://localhost:5173 # Or wherever your frontend is located

@@ -5,6 +5,8 @@
 > The spookiest, open-source Discord clone – designed for fun, privacy, and self-hosting.
 
 ---
+# Devlopment is currently paused due to the new ~~"censorship"~~ [Online safety act](https://www.gov.uk/government/news/keeping-children-safe-online-changes-to-the-online-safety-act-explained) that have come into effect in the UK. Once we have a better understanding of whats actually happening, then we'll start working on it again.
+
 
 ## 👻 About Spookcord
 

@@ -48,8 +48,6 @@
 		"@storybook/sveltekit": "^9.0.0",
 		"@storybook/test-runner": "^0.22.0",
 		"@sveltejs/adapter-auto": "^6.0.0",
-		"@sveltejs/kit": "^2.16.0",
-		"@sveltejs/package": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
 		"@testing-library/jest-dom": "^6.6.3",
@@ -67,7 +65,6 @@
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
-		"publint": "^0.3.2",
 		"storybook": "^9.0.0",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
@@ -83,6 +80,9 @@
 		"svelte"
 	],
 	"dependencies": {
+		"@sveltejs/kit": "^2.16.0",
+		"publint": "^0.3.2",
+		"@sveltejs/package": "^2.0.0",
 		"@lucide/svelte": "^0.511.0",
 		"bits-ui": "^2.2.0",
 		"tailwind-merge": "^3.3.0",

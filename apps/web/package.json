@@ -14,7 +14,6 @@
 	"devDependencies": {
 		"@internationalized/date": "^3.8.1",
 		"@spookcord/types": "workspace:*",
-		"@spookcord/ui": "workspace:*",
 		"@sveltejs/adapter-auto": "^6.0.1",
 		"@sveltejs/kit": "^2.21.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
@@ -24,6 +23,7 @@
 		"clsx": "^2.1.1",
 		"svelte": "^5.30.2",
 		"svelte-adapter-bun": "^0.5.2",
+		"svelte-adapter-bun-next": "^1.0.3",
 		"svelte-check": "^4.2.1",
 		"svelte-sonner": "^1.0.1",
 		"tailwind-merge": "^3.3.0",
@@ -31,14 +31,15 @@
 		"tailwindcss": "^4.1.7",
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^5.8.3",
+		"@spookcord/db-schema": "workspace:*",
 		"vite": "^6.3.5"
 	},
 	"dependencies": {
+		"@spookcord/ui": "workspace:*",
 		"@lucide/svelte": "^0.515.0",
 		"@orpc/client": "^1.2.0",
 		"@orpc/server": "^1.2.0",
 		"@orpc/svelte-query": "^1.2.0",
-		"@spookcord/db-schema": "workspace:*",
 		"@supabase/supabase-js": "^2.49.4",
 		"@tanstack/svelte-form": "^1.11.1",
 		"@tanstack/svelte-query": "^5.76.0",
@@ -46,5 +47,5 @@
 		"mode-watcher": "^1.0.7",
 		"zod": "^3.25.56"
 	},
-	"packageManager": "bun@1.2.13"
+	"packageManager": "bun@1.2.18"
 }
